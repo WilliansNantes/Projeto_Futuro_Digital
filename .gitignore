@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+lib/
+lib64/
+include/
+bin/
+share/
+*.egg-info/
+.coverage
+htmlcov/
+.tox/
+dist/
+build/
+.env
+# Flask instance folder (contains local configuration/databases)
+instance/
+
+# Editors and IDEs
+.idea/
+.vscode/
+*.swp
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+rascunhos/
