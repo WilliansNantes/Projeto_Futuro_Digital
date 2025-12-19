@@ -5,8 +5,8 @@ from conf.database import init_db
 
 
 
-from control.user           import user_bp
-from routes.auth            import auth_bp 
+from control.usuario           import user_bp
+from routes.auth               import auth_bp 
 
 
 

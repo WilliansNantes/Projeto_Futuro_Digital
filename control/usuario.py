@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy #importar certinho
 from conf.database import db
 
 
-user_db = Blueprint('cliente',__name__,url_prefix='/cliente')
+user_bp = Blueprint('cliente',__name__,url_prefix='/cliente')
 
 
 
@@ -14,8 +14,9 @@ user_db = Blueprint('cliente',__name__,url_prefix='/cliente')
 #Criar 
 #insert - SQL
 #http/web - POST
-@user_db.route("/", methods=["POST"])
+@user_bp.route("/", methods=["POST"])
 def criar():
+    
     #dados que vieram
     nome = request.form.get("nome")
     email = request.form.get("email")
@@ -41,7 +42,7 @@ def criar():
 
 #Selects
 #ver cliente/1
-@cliente_bp.route('/<id>')
+@user_bp.route('/<id>')
 def get_one(id):
     sql = text("SELECT * FROM clientes where id = :id")
     dados = {"id": id}
@@ -56,7 +57,7 @@ def get_one(id):
         return e
     
 #verTodos os clientes
-@cliente_bp.route('/all')
+@user_bp.route('/all')
 def get_all():
     sql_query = text("SELECT * FROM clientes ") #LIMIT 100 OFFSET 100 para paginação
     
@@ -78,7 +79,7 @@ def get_all():
 
 #atualizar 
 #update
-@cliente_bp.route("/<id>", methods=["PUT"])
+@user_bp.route("/<id>", methods=["PUT"])
 def atualizar(id):
     #dados que vieram
     nome = request.form.get("nome")
@@ -103,7 +104,7 @@ def atualizar(id):
 
 #deletar/Destruir
 #delete
-@cliente_bp.route("/<id>", methods=['DELETE'])
+@user_bp.route("/<id>", methods=['DELETE'])
 def delete(id):
     sql = text("DELETE FROM clientes WHERE id = :id")
     dados = {"id": id}

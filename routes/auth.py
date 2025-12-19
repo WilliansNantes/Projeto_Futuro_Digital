@@ -16,11 +16,11 @@ def login():
     
     #dados que vieram
     email = request.form.get("email")
-    senha = request.form.get("password")
+    password = request.form.get("password")
     
     #SQL
-    sql = text("SELECT * FROM user WHERE email = :email AND senha = :password")
-    dados = {"email": email, "password": senha} #os dados do que veio lá da var sql
+    sql = text("SELECT * FROM usuario WHERE email = :email AND password = :password")
+    dados = {"email": email, "password": password} #os dados do que veio lá da var sql
     try:
         result = db.session.execute(sql, dados)
         usuario = result.mappings().first()
@@ -28,7 +28,11 @@ def login():
         if usuario:
             return jsonify({
                 "success": True,
-                "user": dict(usuario)
+                "usuario": {
+                    "id": usuario["id_user"],
+                    "name": usuario["nome_user"],
+                    "função": usuario["funcao"]
+                }
             }), 200
         else:
             return jsonify({
