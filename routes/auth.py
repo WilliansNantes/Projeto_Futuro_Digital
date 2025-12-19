@@ -46,4 +46,11 @@ def login():
             "error": str(e)
         }), 500   
     
-   
+    
+# Fazendo logout
+@auth_bp.route('/logout', methods=['POST'])
+def logout():
+    return jsonify({
+        "success": True,
+        "message": "Logout realizado com sucesso"
+    }), 200

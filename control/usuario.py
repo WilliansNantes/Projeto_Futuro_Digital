@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy #importar certinho
 from conf.database import db
 
 
-user_bp = Blueprint('cliente',__name__,url_prefix='/cliente')
+user_bp = Blueprint('usuario',__name__,url_prefix='/usuario')
 
 
 
@@ -20,7 +20,7 @@ def criar():
     #dados que vieram
     nome = request.form.get("nome")
     email = request.form.get("email")
-    cidade = request.form.get("cidade")
+    password = request.form.get("password")
 
 
     #SQL
