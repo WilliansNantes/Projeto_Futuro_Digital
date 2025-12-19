@@ -14,18 +14,24 @@ user_bp = Blueprint('usuario',__name__,url_prefix='/usuario')
 #Criar 
 #insert - SQL
 #http/web - POST
-@user_bp.route("/", methods=["POST"])
+@user_bp.route("/insert", methods=["POST"])
 def criar():
     
     #dados que vieram
     nome = request.form.get("nome")
     email = request.form.get("email")
     password = request.form.get("password")
+    funcao = request.form.get("funcao")
+    
+    
+     # Validação
+    if not all([nome, email, password, funcao]):
+        return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
 
 
     #SQL
-    sql = text("INSERT INTO clientes (nome_cliente, email, cidade) VALUES (:nome, :email, :cidade) RETURNING id")
-    dados = {"nome": nome, "email": email, "cidade": cidade} #os dados do que veio lá da var sql
+    sql = text("INSERT INTO usuario (nome_user, email, password, funcao) VALUES (:nome, :email, :password, :funcao) RETURNING id_user")
+    dados = {"nome": nome, "email": email, "password": password, "funcao": funcao} #os dados do que veio lá da var sql
 
 
     #executar consulta
@@ -34,21 +40,22 @@ def criar():
 
 
     #pega o id
-    id = result.fetchone()[0]
-    dados['id'] = id
+    id_user = result.fetchone()[0]
+    dados['id_user'] = id_user
 
 
     return dados
 
 #Selects
-#ver cliente/1
+#ver usuário/1
 @user_bp.route('/<id>')
 def get_one(id):
-    sql = text("SELECT * FROM clientes where id = :id")
+    sql = text("SELECT * FROM usuario where id_user = :id")
     dados = {"id": id}
     
     try:
         result = db.session.execute(sql, dados)
+        
         #Mapear todas as colunas para a linha
         linha = result.mappings().all()[0]
         
@@ -56,10 +63,10 @@ def get_one(id):
     except Exception as e:
         return e
     
-#verTodos os clientes
+#verTodos os usuarios
 @user_bp.route('/all')
 def get_all():
-    sql_query = text("SELECT * FROM clientes ") #LIMIT 100 OFFSET 100 para paginação
+    sql_query = text("SELECT * FROM usuario ") #LIMIT 100 OFFSET 100 para paginação
     
     try:
         #result sem dados
@@ -81,23 +88,58 @@ def get_all():
 #update
 @user_bp.route("/<id>", methods=["PUT"])
 def atualizar(id):
-    #dados que vieram
+    
+    #dados que vieram   
     nome = request.form.get("nome")
     email = request.form.get("email")
-    cidade = request.form.get("cidade")
-    sql = text("UPDATE clientes set nome_cliente = :nome, email = :email, cidade = :cidade WHERE id = :id")
-    dados = {"nome": nome, "email": email, "cidade": cidade, "id" : id} #os dados do que veio lá da var sql
+    password = request.form.get("password")
+    funcao = request.form.get("funcao")
     
+    #Verificando quais campos foram enviados
+    campos = []
+    dados = {"id": id}
+    
+    if nome:
+            campos.append("nome_user = :nome")
+            dados["nome"] = nome
+
+    if email:
+        campos.append("email = :email")
+        dados["email"] = email
+
+    if password:
+        campos.append("password = :password")
+        dados["password"] = password
+
+    if funcao:
+        campos.append("funcao = :funcao")
+        dados["funcao"] = funcao
+
+    if not campos:
+        return "Nenhum dado para atualizar"
+    
+    #SQL
+    sql_update = text("UPDATE usuario SET " + ", ".join(campos) + " WHERE id_user = :id")
+
+    sql_select = text("SELECT * FROM usuario WHERE id_user = :id")
+   
+
     try:
+        
+        antes = db.session.execute(sql_select, {"id": id}).mappings().first()
+
+        if not antes:
+            return "Usuário não encontrado"
+        
         result = db.session.execute(sql,dados)
         linhas_afetadas = result.rowcount #conta quantas linhas foram afetadas
         
         if linhas_afetadas == 1: 
             db.session.commit()
-            return f"Cliente com o id:{id} alterado"
+            return f"Usuário com o id:{id} alterado"
         else:
             db.session.rollback()
-            return f"PRESTE ATENÇÃO, ALGO NÃO ESTÁ CORRETO!! SÓ DEUS NA CAUSA!!"
+            return f" ATENÇÃO, ALGO NÃO ESTÁ CORRETO!! "
     except Exception as e:
             return str(e)
 
@@ -106,7 +148,7 @@ def atualizar(id):
 #delete
 @user_bp.route("/<id>", methods=['DELETE'])
 def delete(id):
-    sql = text("DELETE FROM clientes WHERE id = :id")
+    sql = text("DELETE FROM usuario WHERE id_user = :id")
     dados = {"id": id}
 
     try:
@@ -115,10 +157,10 @@ def delete(id):
     
         if linhas_afetadas == 1: 
             db.session.commit()
-            return f"Cliente com o id:{id} removida"
+            return f"Usuário com o id:{id} removida"
         else:
             db.session.rollback()
-            return f"PRESTE ATENÇÃO, ALGO NÃO ESTÁ CORRETO!! SÓ DEUS NA CAUSA!!"
+            return f"ATENÇÃO, ALGO NÃO ESTÁ CORRETO!!"
    
     except Exception as e:
          return str(e)
