@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy #importar certinho
 from conf.database import db
 
 
-cliente_bp = Blueprint('cliente',__name__,url_prefix='/cliente')
+user_db = Blueprint('cliente',__name__,url_prefix='/cliente')
 
 
 
@@ -14,7 +14,7 @@ cliente_bp = Blueprint('cliente',__name__,url_prefix='/cliente')
 #Criar 
 #insert - SQL
 #http/web - POST
-@cliente_bp.route("/", methods=["POST"])
+@user_db.route("/", methods=["POST"])
 def criar():
     #dados que vieram
     nome = request.form.get("nome")
