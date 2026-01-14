@@ -23,33 +23,68 @@ def criar():
     contato = request.form.get("contato")
     cidade = request.form.get("cidade")
     status_id = request.form.get("status_id")      
-    valor_kwh_mes_01 = request.form.get("Valor KW/H mes 01")
-    valor_kwh_mes_02 = request.form.get("Valor KW/H mes 02")
-    valor_kwh_mes_03 = request.form.get("Valor KW/H mes 03")
+    valor01 = request.form.get("Valor KW/H mes 01")
+    valor02 = request.form.get("Valor KW/H mes 02")
+    valor03 = request.form.get("Valor KW/H mes 03")
 
      # Validação
-    if not all([nome, email, contato, cidade, status_id, valor_kwh_mes_01, valor_kwh_mes_02, valor_kwh_mes_03]):
+    if not all([nome, email, contato, cidade, status_id, valor01, valor02, valor03]):
         return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
+
+    try:    
+        valor01 = float(valor01)
+        valor02 = float(valor02)
+        valor03 = float(valor03)
+    except ValueError:
+        return jsonify({"erro": "Os valores de consumo devem ser numéricos"}), 400
+
+    try:
+        status_id = int(status_id)
+    except ValueError:
+        return jsonify({"erro": "O ID do status deve ser um número inteiro"}), 400
+        
+    #calculando a média
+    media_kwh_mes = (valor01 + valor02 + valor03) / 3
     
-    for valor in [valor_kwh_mes_01, valor_kwh_mes_02, valor_kwh_mes_03]:
-        try:
-            float(valor)
-        except ValueError:
-            return jsonify({"erro": "Os valores de KW/H devem ser numéricos"}), 400
-    while True:
-        try:
-            status_id = int(status_id)
-            break
-        except ValueError:
-            return jsonify({"erro": "O ID do status deve ser um número inteiro"}), 400
+    #calculando a media paga mes
+    media_pago_mes = media_kwh_mes * 0.5  # Exemplo de cálculo
 
+    #Verificando se o status existe
+    sql_status = text("SELECT id_status FROM status WHERE id_status = :status_id")
+    resultado_status = db.session.execute(sql_status, {"status_id": status_id}).fetchone()
 
+    if resultado_status is None:
+        return jsonify({"erro": "Status não existente!"}), 400
+    
     #SQL
-    sql = text("INSERT INTO leads (nome, email, contato, cidade, status_id, valor_kwh_mes_01, valor_kwh_mes_02, valor_kwh_mes_03) VALUES (:nome, :email, :contato, :cidade, :status_id, :valor_kwh_mes_01, :valor_kwh_mes_02, :valor_kwh_mes_03) RETURNING id_lead")
-    dados = {"nome": nome, "email": email, "contato": contato, "cidade": cidade, "status_id": status_id, "valor_kwh_mes_01": valor_kwh_mes_01, "valor_kwh_mes_02": valor_kwh_mes_02, "valor_kwh_mes_03": valor_kwh_mes_03} #os dados do que veio lá da var sql
+    sql = text("""
+        INSERT INTO leads (
+            nome, email, contato, cidade, status_id,
+            "valor KW/H mes 01",
+            "valor KW/H mes 02",
+            "valor KW/H mes 03",
+            "Media KW/H por mes"
+        )
+        VALUES (
+            :nome, :email, :contato, :cidade, :status_id,
+            :valor1, :valor2, :valor3, :media
+        )
+        RETURNING id_lead
+    """)
 
+    dados = {
+        "nome": nome,
+        "email": email,
+        "contato": contato,
+        "cidade": cidade,
+        "status_id": status_id,
+        "valor1": valor01,
+        "valor2": valor02,
+        "valor3": valor03,
+        "media": media_kwh_mes
+    }
 
-    #executar consulta
+     #executar consulta
     result = db.session.execute(sql, dados)
     db.session.commit()
 
