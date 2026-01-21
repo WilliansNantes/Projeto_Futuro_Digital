@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy #importar certinho
 from conf.database import db
 
 
-fornecedor_bp = Blueprint('fornecedor',__name__,url_prefix='/fornecedor')
+status_bp = Blueprint('status',__name__,url_prefix='/status')
 
 
 
@@ -14,39 +14,34 @@ fornecedor_bp = Blueprint('fornecedor',__name__,url_prefix='/fornecedor')
 #Criar 
 #insert - SQL
 #http/web - POST
-@fornecedor_bp.route("/insert", methods=["POST"])
+@status_bp.route("/insert", methods=["POST"])
 def criar():
     
     #dados que vieram
-    nome = request.form.get("nome")
-    email = request.form.get("email")
-    contato = request.form.get("contato")
-    cidade = request.form.get("cidade")
-    status = request.form.get("status")
-    
+    situacao = request.form.get("situação")
+    score_min = request.form.get("score_min")
+    score_max = request.form.get("score_max")
     
      # Validação
-    if not all([nome, email, contato, cidade, status]):
+    if not all([situacao, score_min,score_max]):
         return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
 
 
     #SQL
     sql = text("""
-        INSERT INTO fornecedor_empresa (
-             name_company, email_company, contato, cidade, status_id
+        INSERT INTO status (
+             situação, score_min, score_max 
         ) 
         VALUES (
-            :nome, :email, :contato, :cidade, :status
+            :situacao, :score_min, :score_max 
         ) 
-        RETURNING id_company
+        RETURNING id_status
         """)
     
     dados = {
-        "nome": nome, 
-        "email": email, 
-        "contato": contato, 
-        "cidade": cidade, 
-        "status": status
+        "situacao": situacao, 
+        "score_min": score_min, 
+        "score_max": score_max, 
         } #os dados do que veio lá da var sql
 
 
@@ -56,17 +51,17 @@ def criar():
 
 
     #pega o id
-    id_company = result.fetchone()[0]
-    dados['id_company'] = id_company
+    id_status = result.fetchone()[0]
+    dados['id_status'] = id_status
 
 
     return dados
 
 #Selects
 #ver usuário/1
-@fornecedor_bp.route('/<id>')
+@status_bp.route('/<id>')
 def get_one(id):
-    sql = text("SELECT * FROM fornecedor_empresa where id_company = :id")
+    sql = text("SELECT * FROM status where id_status = :id")
     dados = {"id": id}
     
     try:
@@ -80,9 +75,9 @@ def get_one(id):
         return e
     
 #verTodos os usuarios
-@fornecedor_bp.route('/all')
+@status_bp.route('/all')
 def get_all():
-    sql_query = text("SELECT * FROM fornecedor_empresa ") #LIMIT 100 OFFSET 100 para paginação
+    sql_query = text("SELECT * FROM status ") #LIMIT 100 OFFSET 100 para paginação
     
     try:
         #result sem dados
@@ -102,47 +97,37 @@ def get_all():
 
 #atualizar 
 #update
-@fornecedor_bp.route("/<id>", methods=["PUT"])
+@status_bp.route("/<id>", methods=["PUT"])
 def atualizar(id):
     
     #dados que vieram   
-    nome = request.form.get("nome")
-    email = request.form.get("email")
-    contato = request.form.get("contato")
-    cidade = request.form.get("cidade")
-    status = request.form.get("status")
+    situacao = request.form.get("situação")
+    score_min = request.form.get("score_min")
+    score_max = request.form.get("score_max")
     
     #Verificando quais campos foram enviados
     campos = []
     dados = {"id": id}
     
-    if nome:
-            campos.append("name_company = :nome")
-            dados["nome"] = nome
+    if situacao:
+            campos.append("situação = :situacao")
+            dados["situacao"] = situacao
 
-    if email:
-        campos.append("email = :email")
-        dados["email"] = email
+    if score_min:
+        campos.append("score_min = :score_min")
+        dados["score_min"] = score_min
 
-    if contato:
-        campos.append("contato = :contato")
-        dados["contato"] = contato
-
-    if cidade:
-        campos.append("cidade = :cidade")
-        dados["cidade"] = cidade
-
-    if status:
-        campos.append("status_id = :status")
-        dados["status"] = status
+    if score_max:
+        campos.append("score_max = :score_max")
+        dados["score_max"] = score_max
 
     if not campos:
         return "Nenhum dado para atualizar"
     
     #SQL
-    sql_update = text("UPDATE fornecedor_empresa SET " + ", ".join(campos) + " WHERE id_company = :id")
+    sql_update = text("UPDATE status SET " + ", ".join(campos) + " WHERE id_status = :id")
 
-    sql_select = text("SELECT * FROM fornecedor_empresa WHERE id_company = :id")
+    sql_select = text("SELECT * FROM status WHERE id_status = :id")
    
 
     try:
@@ -150,7 +135,7 @@ def atualizar(id):
         antes = db.session.execute(sql_select, {"id": id}).mappings().first()
 
         if not antes:
-            return f"Fornecedor não encontrado"
+            return f"Status não encontrado", 400
 
         #EXECUTA UPDATE
         result = db.session.execute(sql_update, dados)
@@ -164,13 +149,13 @@ def atualizar(id):
             depois = db.session.execute(sql_select, {"id": id}).mappings().first()
 
             return {
-                "msg": f"Fornecedor com id {id} atualizado com sucesso",
+                "msg": f"Status com id {id} atualizado com sucesso",
                 "antes": dict(antes),
                 "depois": dict(depois)
             }
         else:
             db.session.rollback()
-            return {"msg": "ATENÇÃO, ALGO NÃO ESTÁ CORRETO!!"}
+            return {"msg": "ATENÇÃO, ALGO NÃO ESTÁ CORRETO!!"}, 400
 
     except Exception as e:
         db.session.rollback()
@@ -179,9 +164,9 @@ def atualizar(id):
 
 #deletar/Destruir
 #delete
-@fornecedor_bp.route("/<id>", methods=['DELETE'])
+@status_bp.route("/<id>", methods=['DELETE'])
 def delete(id):
-    sql = text("DELETE FROM fornecedor_empresa WHERE id_company = :id")
+    sql = text("DELETE FROM status WHERE id_status = :id")
     dados = {"id": id}
 
     try:
@@ -190,7 +175,7 @@ def delete(id):
     
         if linhas_afetadas == 1: 
             db.session.commit()
-            return f"Usuário com o id:{id} removida"
+            return f"Status com o id:{id} removida"
         else:
             db.session.rollback()
             return f"ATENÇÃO, ALGO NÃO ESTÁ CORRETO!!"

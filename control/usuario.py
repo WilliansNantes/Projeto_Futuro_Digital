@@ -119,29 +119,41 @@ def atualizar(id):
         return "Nenhum dado para atualizar"
     
     #SQL
-    sql_update = text("UPDATE usuario SET " + ", ".join(campos) + " WHERE id_user = :id")
+    sql_update = text("UPDATE fornecedor_empresa SET " + ", ".join(campos) + " WHERE id_company = :id")
 
-    sql_select = text("SELECT * FROM usuario WHERE id_user = :id")
+    sql_select = text("SELECT * FROM fornecedor_empresa WHERE id_company = :id")
    
 
     try:
-        
+        #DADOS ANTES
         antes = db.session.execute(sql_select, {"id": id}).mappings().first()
 
         if not antes:
-            return "Usuário não encontrado"
-        
-        result = db.session.execute(sql,dados)
-        linhas_afetadas = result.rowcount #conta quantas linhas foram afetadas
-        
-        if linhas_afetadas == 1: 
+            return f"Fornecedor não encontrado"
+
+        #EXECUTA UPDATE
+        result = db.session.execute(sql_update, dados)
+        #conta quantas linhas foram afetadas
+        linhas_afetadas = result.rowcount  
+
+        if linhas_afetadas == 1:
             db.session.commit()
-            return f"Usuário com o id:{id} alterado"
+
+            #DADOS DEPOIS
+            depois = db.session.execute(sql_select, {"id": id}).mappings().first()
+
+            return {
+                "msg": f"Fornecedor com id {id} atualizado com sucesso",
+                "antes": dict(antes),
+                "depois": dict(depois)
+            }
         else:
             db.session.rollback()
-            return f" ATENÇÃO, ALGO NÃO ESTÁ CORRETO!! "
+            return {"msg": "ATENÇÃO, ALGO NÃO ESTÁ CORRETO!!"}
+
     except Exception as e:
-            return str(e)
+        db.session.rollback()
+        return {"erro": str(e)}
 
 
 #deletar/Destruir
