@@ -11,7 +11,7 @@ from control.leads             import lead_bp
 from control.produtos          import product_bp
 from control.fornecedor        import fornecedor_bp
 from control.status            import status_bp 
-
+from control.ordem             import ordem_bp 
 
 app = Flask(__name__)
 
@@ -29,6 +29,7 @@ app.register_blueprint(lead_bp)
 app.register_blueprint(product_bp)
 app.register_blueprint(fornecedor_bp)
 app.register_blueprint(status_bp)
+app.register_blueprint(ordem_bp)
 
 if __name__ == "__main__":
     app.run(debug=True)
