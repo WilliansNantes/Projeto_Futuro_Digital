@@ -224,16 +224,12 @@ def atualizar(id):
 
     try:
         antes = db.session.execute(sql_select, {"id": id}).mappings().first()
-
-        if not antes:
-            return jsonify({"erro": "Fornecedor não encontrado"}), 404
-
         result = db.session.execute(sql_update, dados)
-
+        
+        
         if result.rowcount == 1:
-            db.session.commit()
-
             depois = db.session.execute(sql_select, {"id": id}).mappings().first()
+            db.session.commit()
 
             return {
                 "msg": f"Fornecedor com id {id} atualizado com sucesso",
