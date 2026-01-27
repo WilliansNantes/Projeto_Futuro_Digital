@@ -59,35 +59,59 @@ def criar():
             return jsonify({
                 "erro": "Numero de contato inválido;Colocar apenas numeros"
             }), 400
+    
+    # Validação do campo cidade
+    if not cidade:
+        return jsonify({"erro": "Cidade é obrigatória"}), 400
         
     #Verificando se os valores são numericos
     valores = []
+    campos_valor = [valor01, valor02, valor03]
 
-    for valor in [valor01, valor02, valor03]:
-        if valor:
-            try:
-                valores.append(float(valor))
-            except ValueError:
-                return jsonify({"erro": "Os valores de consumo devem ser numéricos"}), 400
-            
-    #calculando a média
-    media_kwh_mes = None
-    media_pago_mes = None
+    # Conta quantos campos foram preenchidos
+    campos_preenchidos = [v for v in campos_valor if v]
 
-    if len(valores) == 3:
-        media_kwh_mes = sum(valores) / 3
-        media_pago_mes = media_kwh_mes * 0.5
+    # REGRA:
+    # - 0 preenchidos → ok
+    # - 3 preenchidos → ok
+    # - 1 ou 2 → erro
     
+    if len(campos_preenchidos) not in (0, 3):
+        return jsonify({
+            "erro": "Preencha todos os campos de consumo"
+        }), 400
+
+    # Se os 3 foram preenchidos, valida e converte
+    if len(campos_preenchidos) == 3:
+        try:
+            valores = [float(v) for v in campos_valor]
+        except ValueError:
+            return jsonify({
+                "erro": "Os valores de consumo devem ser numéricos"
+            }), 400
+
+        media_kwh_mes = sum(valores) / 3
+        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
+    else:
+        media_kwh_mes = None
+        media_pago_mes = None
+        
+        
     #SCORE base 
-    if all(campos_principais):
+    total_campos = len(campos_principais)
+    preenchidos = len([c for c in campos_principais if c])
+
+    if preenchidos == total_campos:
         score += 50
+    elif preenchidos > 0:
+        score += 25
     
     # BÔNUS DE SCORE 
     if media_pago_mes is not None:
-        if media_pago_mes >= 500:
+        if 500 <= media_pago_mes < 720:
             score += 50
-        if media_pago_mes >= 720:
-            score += 50
+        elif media_pago_mes >= 720:
+            score += 100
     
     #Inserindo o status
     if score <= 50:
