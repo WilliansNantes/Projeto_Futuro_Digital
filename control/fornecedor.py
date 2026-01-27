@@ -144,7 +144,8 @@ def atualizar(id):
     contato = request.form.get("contato")
     cidade = request.form.get("cidade")
     status = request.form.get("status")
-
+    
+    #Verificando quais campos foram enviados
     campos = []
     dados = {"id": id}
 

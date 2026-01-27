@@ -160,65 +160,135 @@ def atualizar(id):
     campos = []
     dados = {"id": id}
     
+    # Verificando Lead (somente se alterado)
     if lead_id:
-            campos.append("lead_id = :lead_id")
-            dados["lead_id"] = lead_id
+        if not lead_id.isdigit():
+            return jsonify({"erro": "Lead ID deve ser numérico"}), 400
 
+        sql_check_lead = text(
+            "SELECT COUNT(*) FROM leads WHERE id_lead = :lead"
+        )
+        result = db.session.execute(sql_check_lead, {"lead": lead_id})
+
+        if result.fetchone()[0] == 0:
+            return jsonify({"erro": "Lead não existe"}), 400
+
+        campos.append("lead_id = :lead_id")
+        dados["lead_id"] = lead_id
+
+    # Verificando e formatando data da ordem (somente se alterada)
     if data_ordem:
+        try:
+            data_ordem = datetime.strptime(data_ordem, "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({
+                "erro": "Data da ordem inválida. Use o formato YYYY-MM-DD"
+            }), 400
+
         campos.append("data_ordem = :data_ordem")
         dados["data_ordem"] = data_ordem
 
+    # Verificando Produto (somente se alterado)
     if produto_id:
+        if not produto_id.isdigit():
+            return jsonify({"erro": "Produto ID deve ser numérico"}), 400
+
+        sql_check_produto = text(
+            "SELECT COUNT(*) FROM produtos WHERE id_produto = :produto_id"
+        )
+        result = db.session.execute(
+            sql_check_produto, {"produto_id": produto_id}
+        )
+
+        if result.fetchone()[0] == 0:
+            return jsonify({"erro": "Produto não encontrado"}), 400
+
         campos.append("produto_id = :produto_id")
         dados["produto_id"] = produto_id
 
+    # Verificando Quantidade (somente se alterada)
     if quantidade:
+        if not quantidade.isdigit():
+            return jsonify({"erro": "Quantidade deve ser numérica"}), 400
+
+        quantidade = int(quantidade)
+        if quantidade <= 0:
+            return jsonify({
+                "erro": "Quantidade deve ser um número positivo"
+            }), 400
+
         campos.append("quantidade = :quantidade")
         dados["quantidade"] = quantidade
 
+    # Verificando Valor vendido (somente se alterado)
     if valor_vendido:
+        if not valor_vendido.replace('.', '', 1).isdigit():
+            return jsonify({
+                "erro": "Valor vendido deve ser numérico"
+            }), 400
+
+        valor_vendido = float(valor_vendido)
+        if valor_vendido <= 0:
+            return jsonify({
+                "erro": "Valor vendido deve ser um número positivo"
+            }), 400
+
         campos.append("valor_vendido = :valor_vendido")
         dados["valor_vendido"] = valor_vendido
 
+    # Verificando Status (somente se alterado)
     if status:
+        if not status.isdigit():
+            return jsonify({
+                "erro": "Status deve ser numérico"
+            }), 400
+
+        sql_check_status = text(
+            "SELECT COUNT(*) FROM status WHERE id_status = :status_id"
+        )
+        result = db.session.execute(
+            sql_check_status, {"status_id": status}
+        )
+
+        if result.fetchone()[0] == 0:
+            return jsonify({"erro": "Status inválido"}), 400
+
         campos.append("status = :status")
         dados["status"] = status
 
     if not campos:
-        return "Nenhum dado para atualizar"
-    
-    #SQL
-    sql_update = text("UPDATE ordem SET " + ", ".join(campos) + " WHERE id_ordem = :id")
+        return jsonify({"msg": "Nenhum dado para atualizar"}), 400
 
-    sql_select = text("SELECT * FROM ordem WHERE id_ordem = :id")
-   
+    sql_update = text(
+        "UPDATE ordem SET " + ", ".join(campos) + " WHERE id_ordem = :id"
+    )
+    sql_select = text(
+        "SELECT * FROM ordem WHERE id_ordem = :id"
+    )
+
     try:
-        
-        antes = db.session.execute(sql_select, {"id": id}).mappings().first()
+        antes = db.session.execute(
+            sql_select, {"id": id}
+        ).mappings().first()
 
         if not antes:
-            return "Ordem não encontrado"
+            return jsonify({"erro": "Ordem não encontrada"}), 404
 
-        
         result = db.session.execute(sql_update, dados)
-        linhas_afetadas = result.rowcount
 
-        if linhas_afetadas != 1:
+        if result.rowcount != 1:
             db.session.rollback()
-            return "ATENÇÃO, ALGO NÃO ESTÁ CORRETO!!"
+            return jsonify({
+                "erro": "ATENÇÃO, ALGO NÃO ESTÁ CORRETO!!"
+            }), 400
 
-        
         db.session.commit()
 
-        
-        depois = db.session.execute(sql_select, {"id": id}).mappings().first()
-        
-        if not depois:
-            return jsonify({"erro": "Falha ao recuperar dados atualizados"}), 500
+        depois = db.session.execute(
+            sql_select, {"id": id}
+        ).mappings().first()
 
-        # verificar quais campos foram alterados
         alterados = {}
-
         for campo in depois.keys():
             if antes[campo] != depois[campo]:
                 alterados[campo] = {
@@ -227,14 +297,14 @@ def atualizar(id):
                 }
 
         return jsonify({
-    "mensagem": f"Ordem com o id:{id} alterado",
-    "dados_alterados": alterados,
-    "Ordem_atualizada": dict(depois)
-}), 200
+            "mensagem": f"Ordem com o id:{id} alterada",
+            "dados_alterados": alterados,
+            "ordem_atualizada": dict(depois)
+        }), 200
 
     except Exception as e:
         db.session.rollback()
-        return jsonify({"erro": str(e)})
+        return jsonify({"erro": str(e)}), 500
 
 #deletar/Destruir
 #delete
