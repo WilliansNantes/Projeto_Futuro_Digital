@@ -30,7 +30,12 @@ def criar():
      # Validação
     if not all([nome, email, contato, cidade, status_id, valor01, valor02, valor03]):
         return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
-
+    
+    #verifica se contato, status são numeros
+    if not contato.isdigit() or not status_id.isdigit():
+        return jsonify({"erro": "Contato e Status devem ser números"}), 400
+        
+    #Verificando se os valores são numericos
     try:    
         valor01 = float(valor01)
         valor02 = float(valor02)
@@ -42,7 +47,13 @@ def criar():
         status_id = int(status_id)
     except ValueError:
         return jsonify({"erro": "O ID do status deve ser um número inteiro"}), 400
-        
+    
+    # Validação do email
+    email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    
+    if not re.match(email_regex, email):
+        return jsonify({"erro": "Email inválido"}), 400
+    
     #calculando a média
     media_kwh_mes = (valor01 + valor02 + valor03) / 3
     
@@ -64,10 +75,11 @@ def criar():
             "valor KW/H mes 02",
             "valor KW/H mes 03",
             "Media KW/H por mes"
+            "Media pago/mes"
         )
         VALUES (
             :nome, :email, :contato, :cidade, :status_id,
-            :valor1, :valor2, :valor3, :media
+            :valor1, :valor2, :valor3, :media, :media_pago_mes
         )
         RETURNING id_lead
     """)
@@ -82,6 +94,7 @@ def criar():
         "valor2": valor02,
         "valor3": valor03,
         "media": media_kwh_mes
+        "media.pago.mes": media_pago_mes
     }
 
      #executar consulta
