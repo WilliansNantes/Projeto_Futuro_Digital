@@ -116,7 +116,7 @@ def criar():
     #Inserindo o status
     if score <= 50:
         status_id = 1 #Lead
-    elif score <= 100:
+    elif score > 50 and score <= 100:
         status_id = 2 #Cliente 
     else:
         status_id = 3 #Cliente Promissor
@@ -214,7 +214,7 @@ def atualizar(id):
     email = request.form.get("email")
     contato = request.form.get("contato")
     cidade = request.form.get("cidade")    
-    valor01 = request.form.get("Valor KW/H mes 01")
+    valor01 = request.form.get("Valor KW/H mes 01")#alterar nome 
     valor02 = request.form.get("Valor KW/H mes 02")
     valor03 = request.form.get("Valor KW/H mes 03")
     
@@ -226,20 +226,14 @@ def atualizar(id):
     if not lead_atual:
         return jsonify({"erro": "Lead não encontrado"}), 404
     
-    score = lead_atual["score"]
-    status_id = lead_atual["status_id"]
-    
     #calculando score
-    campos_principais = [
-    nome or lead_atual["nome"],
-    email or lead_atual["email"],
-    contato or lead_atual["contato"],
-    cidade or lead_atual["cidade"],
-    valor01 or lead_atual["valor KW/H mes 01"],
-    valor02 or lead_atual["valor KW/H mes 02"],
-    valor03 or lead_atual["valor KW/H mes 03"]
-]
+    score = 0
     
+    campos_principais = [
+        nome, email, contato, cidade,
+        valor01, valor02, valor03
+    ]
+
     #Verificando quais campos foram enviados
     campos = []
     dados = {"id": id}
@@ -248,8 +242,8 @@ def atualizar(id):
     if nome:
         sql_check_nome = text("""
             SELECT COUNT(*) 
-            FROM fornecedor_empresa 
-            WHERE lead ILIKE :nome
+            FROM leads 
+            WHERE nome ILIKE :nome
             AND id_lead != :id
         """)
         result = db.session.execute(sql_check_nome, {
@@ -307,7 +301,8 @@ def atualizar(id):
 
         media_kwh_mes = sum(valores) / 3
         media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
-
+        
+        
         campos.append('"valor KW/H mes 01" = :valor1')
         campos.append('"valor KW/H mes 02" = :valor2')
         campos.append('"valor KW/H mes 03" = :valor3')
@@ -321,8 +316,7 @@ def atualizar(id):
         dados["valor3"] = valores[2] if len(valores) > 2 else None
         dados["media"] = media_kwh_mes
         dados["media_pago_mes"] = media_pago_mes
-        dados["score"] = score
-        dados["status_id"] = status_id
+        
         
     #SCORE BASE 
     total_campos = len(campos_principais)
@@ -331,8 +325,8 @@ def atualizar(id):
     if preenchidos == total_campos:
         score += 50
     elif preenchidos > 0:
-        score += 25
-    
+        score += 25 
+        
     # BÔNUS DE SCORE 
     media_pago_mes = None
     if media_pago_mes is not None:
@@ -344,10 +338,14 @@ def atualizar(id):
     #Inserindo o status
     if score <= 50:
         status_id = 1 #Lead
-    elif score <= 100:
+    elif score > 50 and score <= 100:
         status_id = 2 #Cliente 
     else:
         status_id = 3 #Cliente Promissor
+        
+    dados["score"] = score
+    dados["status_id"] = status_id
+        
 
     if not campos:
             return jsonify({"msg": "Nenhum dado para atualizar"}), 400
