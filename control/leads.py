@@ -165,3 +165,62 @@ def criar():
         "score": score,
         "status_id": status_id
     }), 201
+    
+    #Selects
+#ver usuário/1
+@lead_bp.route('/<id>')
+def get_one(id):
+    sql = text("SELECT * FROM leads where id_lead = :id")
+    dados = {"id": id}
+    
+    try:
+        result = db.session.execute(sql, dados)
+        
+        #Mapear todas as colunas para a linha
+        linha = result.mappings().all()[0]
+        
+        return dict(linha)
+    except Exception as e:
+        return e
+    
+#verTodos os usuarios
+@lead_bp.route('/all')
+def get_all():
+    sql_query = text("SELECT * FROM leads ") 
+    
+    try:
+        #result sem dados
+        result = db.session.execute(sql_query)
+                
+        relatorio = result.mappings().all()
+        json = [dict(row) for row in relatorio] #Gambiara pq cada linha é um objeto
+
+
+        print(json)
+
+
+        return json
+    
+    except Exception as e:
+        return str(e)
+    
+    #deletar/Destruir
+#delete
+@lead_bp.route("/<id>", methods=['DELETE'])
+def delete(id):
+    sql = text("DELETE FROM leads WHERE id_lead = :id")
+    dados = {"id": id}
+
+    try:
+        result = db.session.execute(sql,dados)
+        linhas_afetadas = result.rowcount #conta quantas linhas foram afetadas
+    
+        if linhas_afetadas == 1: 
+            db.session.commit()
+            return f"Lead com o id:{id} removida"
+        else:
+            db.session.rollback()
+            return f"ATENÇÃO, ALGO NÃO ESTÁ CORRETO!!"
+   
+    except Exception as e:
+         return str(e)
