@@ -1,7 +1,7 @@
 from flask import Flask, Blueprint, request, jsonify
 from sqlalchemy import text
 from flask_sqlalchemy import SQLAlchemy #importar certinho
-
+import re
 
 from conf.database import db
 
@@ -23,15 +23,55 @@ def criar():
     password = request.form.get("password")
     funcao = request.form.get("funcao")
     
+    campos = []
+    dados = {}
     
      # Validação
     if not all([nome, email, password, funcao]):
         return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
+    
+    #Validação nome unico
+    if nome:
+        sql_check_nome = text("""
+            SELECT COUNT(*) 
+            FROM usuario 
+            WHERE nome_user ILIKE :nome
+        """)
+        result = db.session.execute(sql_check_nome, {
+            "nome": nome,
+        })
 
+        if result.fetchone()[0] > 0:
+            return jsonify({"erro": "Nome de Usuário já cadastrado"}), 400
+        
+    campos.append("nome_user")
+    dados["nome_user"] = nome
+    
+    #Validação email 
+    email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    
+    if not re.match(email_regex, email):
+        return jsonify({"erro": "Email inválido"}), 400
+    
+    campos.append("email")
+    dados["email"] = email
+    
+    #Password mínimo 6 caracteres
+    if len(password) < 6:
+        return jsonify({"erro": "Senha deve ter no mínimo 6 caracteres"}), 400  
+    
+    campos.append("password")
+    dados["password"] = password
+    
+    #Função
+    if funcao:
+        campos.append("funcao")
+        dados["funcao"] = funcao
 
     #SQL
-    sql = text("INSERT INTO usuario (nome_user, email, password, funcao) VALUES (:nome, :email, :password, :funcao) RETURNING id_user")
-    dados = {"nome": nome, "email": email, "password": password, "funcao": funcao} #os dados do que veio lá da var sql
+    cols = ", ".join(campos)
+    placeholders = ", ".join(':' + c for c in campos)
+    sql = text(f"INSERT INTO usuario ({cols}) VALUES ({placeholders}) RETURNING id_user")
 
 
     #executar consulta

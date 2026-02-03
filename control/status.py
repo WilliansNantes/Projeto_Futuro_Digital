@@ -1,7 +1,7 @@
 from flask import Flask, Blueprint, request, jsonify
 from sqlalchemy import text
 from flask_sqlalchemy import SQLAlchemy #importar certinho
-
+import re
 
 from conf.database import db
 
@@ -18,13 +18,20 @@ status_bp = Blueprint('status',__name__,url_prefix='/status')
 def criar():
     
     #dados que vieram
-    situacao = request.form.get("situação")
-    score_min = request.form.get("score_min")
-    score_max = request.form.get("score_max")
+    situacao = int(request.form.get("situação"))
+    score_min = int(request.form.get("score_min"))
+    score_max = int(request.form.get("score_max"))
     
      # Validação
     if not all([situacao, score_min,score_max]):
         return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
+    
+    #Tratamento de erros
+    if situacao:
+        try:
+                situacao = int(situacao)
+        except ValueError:
+                return jsonify({"erro": "Situação deve ser um número inteiro"}), 400
 
 
     #SQL
@@ -74,7 +81,7 @@ def get_one(id):
     except Exception as e:
         return e
     
-#verTodos os usuarios
+#verTodas os status
 @status_bp.route('/all')
 def get_all():
     sql_query = text("SELECT * FROM status ") #LIMIT 100 OFFSET 100 para paginação
@@ -101,18 +108,22 @@ def get_all():
 def atualizar(id):
     
     #dados que vieram   
-    situacao = request.form.get("situação")
-    score_min = request.form.get("score_min")
-    score_max = request.form.get("score_max")
+    situacao = int(request.form.get("situação"))
+    score_min = int(request.form.get("score_min"))
+    score_max = int(request.form.get("score_max"))
     
     #Verificando quais campos foram enviados
     campos = []
     dados = {"id": id}
     
     if situacao:
-            campos.append("situação = :situacao")
-            dados["situacao"] = situacao
-
+        try:
+                situacao = int(situacao)
+        except ValueError:
+                return jsonify({"erro": "Situação deve ser um número inteiro"}), 400
+        campos.append("situação = :situacao")
+        dados["situacao"] = situacao
+            
     if score_min:
         campos.append("score_min = :score_min")
         dados["score_min"] = score_min
@@ -124,6 +135,7 @@ def atualizar(id):
     if not campos:
         return "Nenhum dado para atualizar"
     
+
     #SQL
     sql_update = text("UPDATE status SET " + ", ".join(campos) + " WHERE id_status = :id")
 

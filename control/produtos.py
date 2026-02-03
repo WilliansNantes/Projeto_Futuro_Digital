@@ -1,12 +1,47 @@
 from flask import Flask, Blueprint, request, jsonify
 from sqlalchemy import text
 from flask_sqlalchemy import SQLAlchemy #importar certinho
+import re
 
 
 from conf.database import db
 
 
 product_bp = Blueprint('produtos',__name__,url_prefix='/produto')
+
+
+def _parse_decimal(value: str) -> float:
+    if value is None:
+        raise ValueError("Valor vazio")
+    s = value.strip()
+    s = s.replace('R$', '').replace(' ', '')
+    if any(c.isalpha() for c in s):
+        raise ValueError("Contém caracteres alfabéticos")
+
+    last_dot = s.rfind('.')
+    last_comma = s.rfind(',')
+
+    if last_dot != -1 and last_comma != -1:
+        if last_comma > last_dot:
+            s = s.replace('.', '')
+            s = s.replace(',', '.')
+        else:
+            s = s.replace(',', '')
+    elif last_comma != -1:
+        s = s.replace('.', '')
+        s = s.replace(',', '.')
+    else:
+        # only dots or digits
+        if last_dot != -1:
+            parts = s.split('.')
+            if len(parts) > 1 and all(len(p) == 3 for p in parts[1:]):
+                s = s.replace('.', '')
+
+    if not re.fullmatch(r"[+-]?\d+(?:\.\d+)?", s):
+        raise ValueError("Formato numérico inválido")
+
+    return float(s)
+
 
 
 
@@ -25,15 +60,112 @@ def criar():
     qtd_in_stock = request.form.get("qtd_in_stock")
     fornecedor_id = request.form.get("fornecedor_id")
     
+    campos = []
+    dados = {}
     
      # Validação
     if not all([nome, valor, qtd_comprado, qtd_vendido, qtd_in_stock, fornecedor_id]):
         return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
+    
+    #Validação nome unico
+    if nome:
+        sql_check_nome = text("""
+            SELECT COUNT(*) 
+            FROM produtos 
+            WHERE nome_produto ILIKE :nome
+        """)
+        result = db.session.execute(sql_check_nome, {
+            "nome": nome,
+        })
+
+        if result.fetchone()[0] > 0:
+            return jsonify({"erro": "Nome de Produto já cadastrado"}), 400
+        campos.append("nome_produto")
+        dados["nome_produto"] = nome
+    
+    #Validação de Valor por unidade
+    if valor:
+        try:
+            valor_por_unidade = _parse_decimal(valor)
+        except Exception:
+            return jsonify({"erro": "Valor por unidade deve ser numérico"}), 400
+
+        if valor_por_unidade <= 0:
+            return jsonify({"erro": "Valor por unidade deve ser um número positivo"}), 400
+
+        campos.append("valor_por_unidade")
+        dados["valor_por_unidade"] = valor
+     
+    #Validação quantidade comprada   
+    if qtd_comprado:
+        if not qtd_comprado.isdigit():
+            return jsonify({"erro": "Quantidade deve ser numérica"}), 400
+
+        qtd_comprado = int(qtd_comprado)
+        if qtd_comprado <= 0:
+            return jsonify({
+                "erro": "Quantidade deve ser um número positivo"
+            }), 400
+
+        campos.append("qtd_comprado")
+        dados["qtd_comprado"] = qtd_comprado
+     
+    #Validação de quantidade vendida   
+    if qtd_vendido:
+        if not qtd_vendido.isdigit():
+            return jsonify({"erro": "Quantidade deve ser numérica"}), 400
+
+        qtd_vendido = int(qtd_vendido)
+        if qtd_vendido <= 0:
+            return jsonify({
+                "erro": "Quantidade deve ser um número positivo"
+            }), 400
+
+        campos.append("qtd_vendido")
+        dados["qtd_vendido"] = qtd_vendido
+        
+    
+    #Validaçao da quantidade em estoque
+    if qtd_in_stock:
+        if not qtd_in_stock.isdigit():
+            return jsonify({"erro": "Quantidade em estoque deve ser numérica"}), 400
+
+        qtd_in_stock = int(qtd_in_stock)
+        if qtd_in_stock <= 0:
+            return jsonify({
+                "erro": "Quantidade em estoque deve ser um número positivo"
+            }), 400
+            
+        campos.append("qtd_in_stock")
+        dados["qtd_in_stock"] = qtd_in_stock
+        
+    #Validação do fornecedor
+    if fornecedor_id:
+        if not fornecedor_id.isdigit():
+            return jsonify({"erro": "Fornecedor ID deve ser numérico"}), 400
+        
+        fornecedor_id = int(fornecedor_id)  
+        if fornecedor_id <= 0:
+            return jsonify({
+                "erro": "Fornecedor ID deve ser um número positivo"
+            }), 400
+        
+        if fornecedor_id:
+            sql_check_fornecedor = text("SELECT COUNT(*) FROM fornecedor_empresa WHERE id_company = :fornecedor_id")
+            result = db.session.execute(sql_check_fornecedor, {"fornecedor_id": fornecedor_id})  
+              
+            if result.fetchone()[0] == 0:
+                return jsonify({"erro": "Fornecedor inválido"}), 400
+        
+        campos.append("fornecedor_id")
+        dados["fornecedor_id"] = fornecedor_id
 
 
-    #SQL
-    sql = text("INSERT INTO produtos (nome_produto, valor_por_unidade, qtd_comprado, qtd_vendido, qtd_in_stock, fornecedor_id) VALUES (:nome_produto, :valor_por_unidade, :qtd_comprado, :qtd_vendido, :qtd_in_stock, :fornecedor_id) RETURNING id_produto")
-    dados = {"nome_produto": nome, "valor_por_unidade": valor, "qtd_comprado": qtd_comprado, "qtd_vendido": qtd_vendido, "qtd_in_stock": qtd_in_stock, "fornecedor_id": fornecedor_id} #os dados do que veio lá da var sql
+    #SQL 
+    cols = ", ".join(campos)
+    placeholders = ", ".join(':' + c for c in campos)
+    sql = text(f"INSERT INTO produtos ({cols}) VALUES ({placeholders}) RETURNING id_produto")
+    
 
 
     #executar consulta
@@ -122,16 +254,14 @@ def atualizar(id):
         dados["nome"] = nome
         
     if valor:
-        if not valor.replace('.', '', 1).isdigit():
-            return jsonify({
-                "erro": "Valor por unidade deve ser numérico"
-            }), 400
+        try:
+            valor_por_unidade = _parse_decimal(valor)
+        except Exception:
+            return jsonify({"erro": "Valor por unidade deve ser numérico"}), 400
 
-        valor_por_unidade = float(valor)
         if valor_por_unidade <= 0:
-            return jsonify({
-                "erro": "Valor por unidade deve ser um número positivo"
-            }), 400
+            return jsonify({"erro": "Valor por unidade deve ser um número positivo"}), 400
+
 
         campos.append("valor_por_unidade = :valor")
         dados["valor"] = valor
