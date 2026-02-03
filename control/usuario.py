@@ -140,16 +140,36 @@ def atualizar(id):
     dados = {"id": id}
     
     if nome:
-            campos.append("nome_user = :nome")
-            dados["nome"] = nome
+        sql_check_nome = text("""
+            SELECT COUNT(*) 
+            FROM usuario 
+            WHERE nome_user ILIKE :nome
+        """)
+        result = db.session.execute(sql_check_nome, {
+            "nome": nome,
+        })
+
+        if result.fetchone()[0] > 0:
+            return jsonify({"erro": "Nome de Usuário já cadastrado"}), 400
+        
+    campos.append("nome_user = :nome")
+    dados["nome"] = nome
 
     if email:
-        campos.append("email = :email")
-        dados["email"] = email
+        email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
+    
+        if not re.match(email_regex, email):
+            return jsonify({"erro": "Email inválido"}), 400
+        
+    campos.append("email = :email")
+    dados["email"] = email
 
     if password:
-        campos.append("password = :password")
-        dados["password"] = password
+        if len(password) < 6:
+            return jsonify({"erro": "Senha deve ter no mínimo 6 caracteres"}), 400 
+     
+    campos.append("password = :password")
+    dados["password"] = password
 
     if funcao:
         campos.append("funcao = :funcao")
@@ -159,9 +179,9 @@ def atualizar(id):
         return "Nenhum dado para atualizar"
     
     #SQL
-    sql_update = text("UPDATE fornecedor_empresa SET " + ", ".join(campos) + " WHERE id_company = :id")
+    sql_update = text("UPDATE usuario SET " + ", ".join(campos) + " WHERE id_user = :id")
 
-    sql_select = text("SELECT * FROM fornecedor_empresa WHERE id_company = :id")
+    sql_select = text("SELECT * FROM usuario WHERE id_user = :id")
    
 
     try:
@@ -169,7 +189,7 @@ def atualizar(id):
         antes = db.session.execute(sql_select, {"id": id}).mappings().first()
 
         if not antes:
-            return f"Fornecedor não encontrado"
+            return f"Usuário não encontrado"
 
         #EXECUTA UPDATE
         result = db.session.execute(sql_update, dados)
@@ -183,7 +203,7 @@ def atualizar(id):
             depois = db.session.execute(sql_select, {"id": id}).mappings().first()
 
             return {
-                "msg": f"Fornecedor com id {id} atualizado com sucesso",
+                "msg": f"Usuário com id {id} atualizado com sucesso",
                 "antes": dict(antes),
                 "depois": dict(depois)
             }
