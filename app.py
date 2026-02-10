@@ -7,11 +7,13 @@ from conf.database import init_db
 
 from control.usuario           import user_bp
 from routes.auth               import auth_bp 
-from control.leads             import lead_bp
+from control.pessoa            import pessoa_bp
 from control.produtos          import product_bp
 from control.fornecedor        import fornecedor_bp
 from control.status            import status_bp 
 from control.ordem             import ordem_bp 
+from control.consumo           import consumo_bp
+
 
 app = Flask(__name__)
 
@@ -25,11 +27,12 @@ init_db(app)
 #Registro de controladores 
 app.register_blueprint(user_bp)
 app.register_blueprint(auth_bp)
-app.register_blueprint(lead_bp)
+app.register_blueprint(pessoa_bp)
 app.register_blueprint(product_bp)
 app.register_blueprint(fornecedor_bp)
 app.register_blueprint(status_bp)
 app.register_blueprint(ordem_bp)
+app.register_blueprint(consumo_bp)
 
 if __name__ == "__main__":
     app.run(debug=True)
