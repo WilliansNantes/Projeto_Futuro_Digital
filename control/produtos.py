@@ -131,8 +131,8 @@ def criar():
 
     #SQL 
     cols = ", ".join(campos)
-    placeholders = ", ".join(':' + c for c in campos)
-    sql = text(f"INSERT INTO produtos ({cols}) VALUES ({placeholders}) RETURNING id_produto")
+    placeholders = ", :".join( campos)
+    sql = text(f"INSERT INTO produtos ({cols}) VALUES (:{placeholders}) RETURNING id_produto")
     
 
 
