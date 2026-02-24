@@ -18,7 +18,7 @@ ordem_bp = Blueprint('ordem',__name__,url_prefix='/ordem')
 def criar():
     
     #dados que vieram
-    lead_id = request.form.get("lead")
+    pessoa_id = request.form.get("pessoa_id")
     data_ordem = request.form.get("data_ordem")
     produto_id = request.form.get("produto_id")
     quantidade = request.form.get("quantidade").replace(',','.')
@@ -28,7 +28,7 @@ def criar():
     
      # Validações
      # Verifica se todos os campos obrigatórios foram fornecidos
-    if not all([lead_id,data_ordem, produto_id, quantidade, valor_vendido, status]):
+    if not all([pessoa_id,data_ordem, produto_id, quantidade, valor_vendido, status]):
         return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
     
     # Valida e converte a data
@@ -38,15 +38,15 @@ def criar():
         return jsonify({"erro": "Data da ordem inválida. Use o formato YYYY-MM-DD"}), 400
     
     #verifica se produto,quantidade,valor_vendido,status são numeros
-    if not lead_id.isdigit() or not produto_id.isdigit() or not quantidade.isdigit() or not valor_vendido.replace('.','',1).isdigit() or not status.isdigit():
-        return jsonify({"erro": "Lead ID, Produto ID, Quantidade, Valor Vendido e Status devem ser números"}), 400
+    if not pessoa_id.isdigit() or not produto_id.isdigit() or not quantidade.isdigit() or not valor_vendido.replace('.','',1).isdigit() or not status.isdigit():
+        return jsonify({"erro": "Pessoa ID, Produto ID, Quantidade, Valor Vendido e Status devem ser números"}), 400
     
-    #Verifica se lead existe
-    sql_check_lead = text("SELECT COUNT(*) FROM leads WHERE id_lead = :lead")
-    result = db.session.execute(sql_check_lead, {"lead": lead_id})
+    #Verifica se pessoa existe
+    sql_check_pessoa = text("SELECT COUNT(*) FROM pessoas WHERE id_pessoa = :pessoa_id")
+    result = db.session.execute(sql_check_pessoa, {"pessoa_id": pessoa_id})
     
     if result.fetchone()[0] == 0:
-        return jsonify({"erro": "Lead não existe"}), 400
+        return jsonify({"erro": "Pessoa não existe"}), 400
 
     # Verifica se produto existe
     sql_check_produto = text("SELECT COUNT(*) FROM produtos WHERE id_produto = :produto_id")
@@ -75,16 +75,16 @@ def criar():
     #SQL
     sql = text("""
         INSERT INTO ordem (
-             lead_id,data_ordem, produto_id, quantidade, valor_vendido, status
+             pessoa_id,data_ordem, produto_id, quantidade, valor_vendido, status
         ) 
         VALUES (
-             :lead_id, :data_ordem, :produto_id, :quantidade, :valor_vendido, :status
+             :pessoa_id, :data_ordem, :produto_id, :quantidade, :valor_vendido, :status
         ) 
         RETURNING id_ordem
         """)
     
     dados = {
-        "lead_id": lead_id,
+        "pessoa_id": pessoa_id,
         "data_ordem": data_ordem,
         "produto_id": produto_id,
         "quantidade": quantidade,
@@ -149,7 +149,7 @@ def get_all():
 def atualizar(id):
     
     #dados que vieram   
-    lead_id = request.form.get("lead")
+    pessoa_id = request.form.get("pessoa_id")
     data_ordem = request.form.get("data_ordem")
     produto_id = request.form.get("produto_id")
     quantidade = request.form.get("quantidade").replace(',','.')
@@ -160,21 +160,21 @@ def atualizar(id):
     campos = []
     dados = {"id": id}
     
-    # Verificando Lead (somente se alterado)
-    if lead_id:
-        if not lead_id.isdigit():
-            return jsonify({"erro": "Lead ID deve ser numérico"}), 400
+    # Verificando Pessoa (somente se alterado)
+    if pessoa_id:
+        if not pessoa_id.isdigit():
+            return jsonify({"erro": "Pessoa ID deve ser numérico"}), 400
 
-        sql_check_lead = text(
-            "SELECT COUNT(*) FROM leads WHERE id_lead = :lead"
+        sql_check_pessoa = text(
+            "SELECT COUNT(*) FROM pessoas WHERE id_pessoa = :pessoa_id"
         )
-        result = db.session.execute(sql_check_lead, {"lead": lead_id})
+        result = db.session.execute(sql_check_pessoa, {"pessoa_id": pessoa_id})
 
         if result.fetchone()[0] == 0:
-            return jsonify({"erro": "Lead não existe"}), 400
+            return jsonify({"erro": "Pessoa não existe"}), 400
 
-        campos.append("lead_id = :lead_id")
-        dados["lead_id"] = lead_id
+        campos.append("pessoa_id = :pessoa_id")
+        dados["pessoa_id"] = pessoa_id
 
     # Verificando e formatando data da ordem (somente se alterada)
     if data_ordem:

@@ -23,30 +23,29 @@ def criar():
     contato = request.form.get("contato")
     cidade = request.form.get("cidade")    
     
-    #calculando score
+    campos = []
+    dados = {}
     score = 0
+    media_cons_mes = None
 
     campos_principais = [
-        nome, email, contato, cidade,
+        nome, email,contato,cidade,
     ]
     
-    # Validação do nome 
+    #Validação do nome
     if nome:
-        sql_check_nome = text("""
-            SELECT COUNT(*)
-            FROM pessoa
-            WHERE nome ILIKE :nome
-        """)
-        result = db.session.execute(sql_check_nome, {"nome": nome})
-
-        if result.fetchone()[0] > 0:
-            return jsonify({"erro": "Nome já cadastrado"}), 400
-
+        if not nome or nome.strip() == "":
+            return jsonify({"erro": "Nome não pode ser vazio"}), 400
+        campos.append("nome")
+        dados["nome"] = nome
+        
     # Validação do email 
     if email:
         email_regex = r'^[\w\.-]+@[\w\.-]+\.\w+$'
         if not re.match(email_regex, email):
             return jsonify({"erro": "E-mail inválido"}), 400
+        campos.append("email")
+        dados["email"] = email
 
     # Validação do contato 
     if contato:
@@ -55,52 +54,51 @@ def criar():
             return jsonify({
                 "erro": "Numero de contato inválido;Colocar apenas numeros"
             }), 400
+        campos.append("contato")
+        dados["contato"] = contato
     
-    # Validação do campo cidade
-    if not cidade:
-        return jsonify({"erro": "Cidade é obrigatória"}), 400
+    # Validação da cidade
+    if cidade:
+        campos.append("cidade")
+        dados["cidade"] = cidade
         
-    #Verificando se os valores são numericos
-    valores = []
-    campos_valor = [valor01, valor02, valor03]
-
     # Conta quantos campos foram preenchidos
-    campos_preenchidos = [v for v in campos_valor if v]
-
-    # REGRA:
-    # - 0 preenchidos → ok
-    # - 3 preenchidos → ok
-    # - 1 ou 2 → erro
-    
-    if len(campos_preenchidos) not in (0, 3):
-        return jsonify({
-            "erro": "Preencha todos os campos de consumo"
-        }), 400
-
-    # Se os 3 foram preenchidos, valida e converte
-    if len(campos_preenchidos) == 3:
-        try:
-            valores = [float(v) for v in campos_valor]
-        except ValueError:
-            return jsonify({
-                "erro": "Os valores de consumo devem ser numéricos"
-            }), 400
-
-        media_kwh_mes = sum(valores) / 3
-        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
-    else:
-        media_kwh_mes = None
-        media_pago_mes = None
-        
-        
     #SCORE base 
     total_campos = len(campos_principais)
     preenchidos = len([c for c in campos_principais if c])
 
-    if preenchidos == total_campos:
+    if email and contato:
+        score += 100
+    else:
         score += 50
-    elif preenchidos > 0:
-        score += 25
+    #Calculando a média de consumo e valor pago
+    valores = []
+    valores = text("""
+        SELECT valor_consumo
+        FROM consumo
+        ORDER BY ano DESC, mes DESC
+        LIMIT 3
+    """)
+    
+    quantidade_valores = len(valores)
+    if quantidade_valores == 3:
+        media_kwh_mes = sum(valores) / 3
+        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
+        
+    elif quantidade_valores == 2:
+        media_kwh_mes = sum(valores) / 2
+        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
+        
+    elif quantidade_valores == 1:    
+        media_kwh_mes = (valores)
+        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
+        
+    else: 
+        media_kwh_mes = None
+        media_pago_mes = None
+        
+        campos.append("media_kwh_mes")
+        dados["media_kwh_mes"] = media_cons_mes
     
     # BÔNUS DE SCORE 
     if media_pago_mes is not None:
@@ -108,7 +106,10 @@ def criar():
             score += 50
         elif media_pago_mes >= 720:
             score += 100
-    
+            
+            campos.append("score")
+            dados["score"] = score
+            
     #Inserindo o status
     if score <= 50:
         status_id = 1 #Lead
@@ -116,57 +117,35 @@ def criar():
         status_id = 2 #Cliente 
     else:
         status_id = 3 #Cliente Promissor
+        
+    campos.append("status_id")
+    dados["status_id"] = status_id
     
     #SQL
-    sql = text("""
-        INSERT INTO leads (
-            nome, email, contato, cidade, score, status_id,
-            "valor_mes_01",
-            "valor_mes_02",
-            "valor_mes_03",
-            "Media_por_mes",
-            "Media_pago_mes"
-        )
-        VALUES (
-            :nome, :email, :contato, :cidade, :score, :status_id,
-            :valor1, :valor2, :valor3, :media, :media_pago_mes
-        )
-        RETURNING id_lead
-    """)
+    cols = ", ".join(campos)
+    placeholders = ", :".join( campos)
 
-    dados = {
-        "nome": nome,
-        "email": email,
-        "contato": contato,
-        "cidade": cidade,
-        "score": score,
-        "status_id": status_id,
-        "valor1": valor01,
-        "valor2": valor02,
-        "valor3": valor03,
-        "media": media_kwh_mes,
-        "media_pago_mes": media_pago_mes
-    }
+    sql = text(f"INSERT INTO pessoas ({cols}) VALUES (:{placeholders}) RETURNING id_pessoa")
+    
 
-     #executar consulta
+
+    #executar consulta
     result = db.session.execute(sql, dados)
     db.session.commit()
 
 
     #pega o id
-    id_lead = result.fetchone()[0]
-    return jsonify({
-        "msg": "Lead criado com sucesso",
-        "id_lead": id_lead,
-        "score": score,
-        "status_id": status_id
-    }), 201
+    id_produto = result.fetchone()[0]
+    dados['id_produto'] = id_produto
+
+
+    return dados
     
     #Selects
 #ver usuário/1
 @pessoa_bp.route('/<id>')
 def get_one(id):
-    sql = text("SELECT * FROM leads where id_lead = :id")
+    sql = text("SELECT * FROM pessoas where id_pessoa = :id")
     dados = {"id": id}
     
     try:
@@ -182,7 +161,7 @@ def get_one(id):
 #verTodos os usuarios
 @pessoa_bp.route('/all')
 def get_all():
-    sql_query = text("SELECT * FROM leads ") 
+    sql_query = text("SELECT * FROM pessoas ") 
     
     try:
         #result sem dados
@@ -210,24 +189,21 @@ def atualizar(id):
     email = request.form.get("email")
     contato = request.form.get("contato")
     cidade = request.form.get("cidade")    
-    valor01 = request.form.get("Valor_mes01")
-    valor02 = request.form.get("Valor_mes02")
-    valor03 = request.form.get("Valor_mes03")
     
     
-    #verificando lead existe
-    sql_check = text("SELECT * FROM leads WHERE id_lead = :id")
-    lead_atual = db.session.execute(sql_check, {"id": id}).mappings().first()
+    #verificando pessoa existe
+    sql_check = text("SELECT * FROM pessoas WHERE id_pessoa = :id")
+    pessoa_atual = db.session.execute(sql_check, {"id": id}).mappings().first()
     
-    if not lead_atual:
-        return jsonify({"erro": "Lead não encontrado"}), 404
+    if not pessoa_atual:
+        return jsonify({"erro": "Pessoa não encontrada"}), 404
     
     #calculando score
     score = 0
+    media_cons_mes = None
     
     campos_principais = [
         nome, email, contato, cidade,
-        valor01, valor02, valor03
     ]
 
     #Verificando quais campos foram enviados
@@ -238,9 +214,9 @@ def atualizar(id):
     if nome:
         sql_check_nome = text("""
             SELECT COUNT(*) 
-            FROM leads 
+            FROM pessoas 
             WHERE nome ILIKE :nome
-            AND id_lead != :id
+            AND id_pessoa != :id
         """)
         result = db.session.execute(sql_check_nome, {
             "nome": nome,
@@ -248,7 +224,7 @@ def atualizar(id):
         })
 
         if result.fetchone()[0] > 0:
-            return jsonify({"erro": "Nome da Lead já cadastrado"}), 400
+            return jsonify({"erro": "Nome da Pessoa já cadastrado"}), 400
 
         campos.append("nome = :nome")
         dados["nome"] = nome
@@ -279,58 +255,51 @@ def atualizar(id):
         campos.append("cidade = :cidade")
         dados["cidade"] = cidade
     
-    # Validação dos valores de consumo (somente se alterado)
+   
+        if email and contato:
+         score += 100
+        
+        else :
+         score += 50
+    #Calculando a média de consumo e valor pago
     valores = []
-    campos_valor = [valor01, valor02, valor03]
-    valores_enviados = [v for v in campos_valor if v]   
-    if len(valores_enviados) not in (0, 3):
-        return jsonify({
-            "erro": "Preencha todos os campos de consumo"
-        }), 400
-    if len(valores_enviados) == 3:
-        try:
-            valores = [float(v) for v in campos_valor]
-        except ValueError:
-            return jsonify({
-                "erro": "Os valores de consumo devem ser numéricos"
-            }), 400
-
+    valores = text("""
+        SELECT valor_consumo
+        FROM consumo
+        ORDER BY ano DESC, mes DESC
+        LIMIT 3
+    """)
+    
+    quantidade_valores = len(valores)
+    if quantidade_valores == 3:
         media_kwh_mes = sum(valores) / 3
         media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
         
+    elif quantidade_valores == 2:
+        media_kwh_mes = sum(valores) / 2
+        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
         
-        campos.append('"valor_mes01" = :valor1')
-        campos.append('"valor_mes02" = :valor2')
-        campos.append('"valor_mes03" = :valor3')
-        campos.append('"Media_por_mes" = :media')
-        campos.append('"Media_pago_mes" = :media_pago_mes')
-        campos.append("score = :score")
-        campos.append("status_id = :status_id")
-
-        dados["valor1"] = valores[0] if len(valores) > 0 else None
-        dados["valor2"] = valores[1] if len(valores) > 1 else None
-        dados["valor3"] = valores[2] if len(valores) > 2 else None
-        dados["media"] = media_kwh_mes
-        dados["media_pago_mes"] = media_pago_mes
+    elif quantidade_valores == 1:    
+        media_kwh_mes = (valores)
+        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
         
+    else: 
+        media_kwh_mes = None
+        media_pago_mes = None
         
-    #SCORE BASE 
-    total_campos = len(campos_principais)
-    preenchidos = len([c for c in campos_principais if c])
-
-    if preenchidos == total_campos:
-        score += 50
-    elif preenchidos > 0:
-        score += 25 
-        
+        campos.append("media_kwh_mes")
+        dados["media_kwh_mes"] = media_cons_mes
+    
     # BÔNUS DE SCORE 
-    media_pago_mes = None
     if media_pago_mes is not None:
         if 500 <= media_pago_mes < 720:
             score += 50
         elif media_pago_mes >= 720:
             score += 100
-    
+            
+            campos.append("score")
+            dados["score"] = score
+            
     #Inserindo o status
     if score <= 50:
         status_id = 1 #Lead
@@ -339,7 +308,7 @@ def atualizar(id):
     else:
         status_id = 3 #Cliente Promissor
         
-    dados["score"] = score
+    campos.append("status_id")
     dados["status_id"] = status_id
         
 
@@ -348,11 +317,11 @@ def atualizar(id):
             
 
     sql_update = text(
-            "UPDATE leads SET " + ", ".join(campos) + " WHERE id_lead = :id"
+            "UPDATE pessoas SET " + ", ".join(campos) + " WHERE id_pessoa = :id"
         )
 
     sql_select = text(
-            "SELECT * FROM leads WHERE id_lead = :id"
+            "SELECT * FROM pessoas WHERE id_pessoa = :id"
         )
 
     try:
@@ -365,7 +334,7 @@ def atualizar(id):
             db.session.commit()
 
             return {
-                "msg": f"Lead com id {id} atualizado com sucesso",
+                "msg": f"Pessoa com id {id} atualizado com sucesso",
                 "antes": dict(antes),
                 "depois": dict(depois)
             }
@@ -381,7 +350,7 @@ def atualizar(id):
 #delete
 @pessoa_bp.route("/<id>", methods=['DELETE'])
 def delete(id):
-    sql = text("DELETE FROM leads WHERE id_lead = :id")
+    sql = text("DELETE FROM pessoas WHERE id_pessoa = :id")
     dados = {"id": id}
 
     try:
@@ -390,7 +359,7 @@ def delete(id):
     
         if linhas_afetadas == 1: 
             db.session.commit()
-            return f"Lead com o id:{id} removida"
+            return f"Pessoa com o id:{id} removida"
         else:
             db.session.rollback()
             return f"ATENÇÃO, ALGO NÃO ESTÁ CORRETO!!"

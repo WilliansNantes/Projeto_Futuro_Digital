@@ -63,7 +63,7 @@ def criar():
     ).scalar()
 
     if pessoa_existe == 0:
-        return jsonify({"erro": "Pessoa não existe"}), 400
+        return jsonify({"erro": "id_pessoa não existe"}), 400
 
     campos.append("pessoa_id")
     dados["pessoa_id"] = pessoa_id
