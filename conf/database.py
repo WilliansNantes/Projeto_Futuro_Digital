@@ -20,7 +20,7 @@ def init_db(app):
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
     
     #É boa prática desativar o recurso de rastreamento de modificações do SQLAlchemy, pois ele pode consumir recursos desnecessários
-    app.cofing[ 'SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config[ 'SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 
     db.init_app(app)
