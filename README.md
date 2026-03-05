@@ -87,12 +87,12 @@ O sistema tem como objetivo fornecer uma estrutura organizada para gerenciamento
 
 ## Estrutura Inicial
 
-ornecedor_empresa
-ordem
-leads
-produtos
-status
-usuario
+- fornecedor_empresa
+- ordem
+- leads
+- produtos
+- status
+- usuario
 
 
 Essas mudanças trouxeram maior aderência às necessidades do cliente final.
@@ -101,52 +101,11 @@ Essas mudanças trouxeram maior aderência às necessidades do cliente final.
 
 # 📊 Diagrama do Banco
 
-```mermaid
-erDiagram
+<p align="center"> <img src="Projeto_Futuro_Digital/img/img/mermaid-diagram.png" width="700">
 
-USUARIO {
-int id_usuario
-string nome
-string email
-}
 
-PESSOAS {
-int id_pessoa
-string nome
-string email
-string contato
-}
 
-PRODUTOS {
-int id_produto
-string nome
-decimal valor
-}
-
-ORDEM {
-int id_ordem
-int id_pessoa
-int id_produto
-date data
-}
-
-CONSUMO {
-int id_consumo
-int id_pessoa
-decimal consumo_mes
-}
-
-STATUS {
-int id_status
-string descricao
-}
-
-PESSOAS ||--o{ ORDEM : realiza
-PRODUTOS ||--o{ ORDEM : possui
-PESSOAS ||--o{ CONSUMO : registra
-STATUS ||--o{ PESSOAS : classifica
-
-📂 Estrutura do Projeto
+## 📂 Estrutura do Projeto
 
 futuro-digital
 │
@@ -170,16 +129,22 @@ futuro-digital
 │
 └── README.md
 
-📷 Desenvolvimento do Banco
+## 📷 Desenvolvimento do Banco
 
 As imagens abaixo mostram etapas da configuração da tabela ordem durante o desenvolvimento do projeto.
 
-<p align="center"> <img src="img/img/Banco_de_dados_conf.company.jpg" width="700"> </p> <p align="center"> <img src="img/img/Banco_de_dados_conf.order.02.jpg" width="700"> </p> <p align="center"> <img src="img/img/Banco_de_dados_conf.order.03.jpg" width="700"> </p> <p align="center"> <img src="img/img/img/Banco_de_dados_conf.order.jpg" width="700"> </p>
+<p align="center"> <img src="Projeto_Futuro_Digital/img/Banco_de_dados_conf.company.jpg" width="700"> </p> 
 
-🔐 Validações Implementadas
+<p align="center"> <img src="Projeto_Futuro_Digital/img/Banco_de_dados_conf.order.02.jpg" width="700"> </p> 
+
+<p align="center"> <img src="Projeto_Futuro_Digital/img/Banco_de_dados_conf.order.03.jpg" width="700"> </p> 
+
+<p align="center"> <img src="Projeto_Futuro_Digital/img/Banco_de_dados_conf.order.jpg" width="700"> </p>
+
+## 🔐 Validações Implementadas
 
 
-Validações de Entrada
+# Validações de Entrada
 
 * campos obrigatórios
 * formato de e-mail
@@ -187,16 +152,16 @@ Validações de Entrada
 * validação de datas
 
 
-Validações de Integridade
+# Validações de Integridade
 
 * verificação de registros relacionados
 * controle de duplicidade
 * validação de valores positivos
 
 
-📡 Endpoints
+## 📡 Endpoints
 
-Usuário
+# Usuário
 
 POST /usuario/insert
 GET /usuario/all
@@ -205,7 +170,7 @@ PUT /usuario/{id}
 DELETE /usuario/{id}
 
 
-Pessoa
+# Pessoa
 
 POST /pessoa/insert
 GET /pessoa/all
@@ -214,7 +179,7 @@ PUT /pessoa/{id}
 DELETE /pessoa/{id}
 
 
-Ordem
+# Ordem
 
 POST /ordem/insert
 GET /ordem/all
@@ -223,7 +188,7 @@ PUT /ordem/{id}
 DELETE /ordem/{id}
 
 
-Consumo
+# Consumo
 
 POST /consumo/insert
 GET /consumo/all
@@ -232,77 +197,67 @@ DELETE /consumo/{id}
 
 
 
-⚙️ Tecnologias Utilizadas
-Linguagens
+## ⚙️ Tecnologias Utilizadas
+# Linguagens
 * Python
 * SQL
 
-Framework
+# Framework
 * Flask
 
-Banco de Dados
+# Banco de Dados
 * PostgreSQL
 
-Infraestrutura
+# Infraestrutura
 * Banco remoto hospedado no Render
 
-▶️ Instalação
+## ▶️ Instalação
 Clonar repositório
 git clone https://github.com/WilliansNantes/Projeto_Futuro_Digital
 
-Entrar na pasta
+## Entrar na pasta
 cd Projeto_Futuro_Digital
 
-Criar ambiente virtual
+## Criar ambiente virtual
 python -m venv venv
 
-Ativar ambiente virtual
+## Ativar ambiente virtual
 Windows
 venv\Scripts\activate
 
-Linux / Mac
+## Linux / Mac
 source venv/bin/activate
 
-Instalar dependências
+## Instalar dependências
 pip install flask flask_sqlalchemy psycopg2
 
-Criar banco de dados
-
+## Criar banco de dados
 Importar o arquivo
 banco de dados.sql
 no PostgreSQL.
 
-Executar aplicação
+## Executar aplicação
 python app.py
 
-API disponível em:
-http://localhost:5000
-
-Autor
+## Autor
 
 Willians Nantes
 
-🎓 Formação
+## 🎓 Formação
 
-Automação Industrial
+- Automação Industrial
 
-Análise e Desenvolvimento de Sistemas
+- Análise e Desenvolvimento de Sistemas
 
-💻 Tecnologias
+## 💻 Tecnologias
 
-Python
+- Python
+- C#
+- Java
+- C++
+- JavaScript
+- SQL
+- APIs REST
 
-C#
-
-Java
-
-C++
-
-JavaScript
-
-SQL
-
-APIs REST
-
-⭐ Projeto desenvolvido para fins acadêmicos e portfólio profissional
+## ⭐ Projeto desenvolvido para fins acadêmicos e portfólio profissional
 
