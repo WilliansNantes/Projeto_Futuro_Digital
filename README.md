@@ -237,11 +237,11 @@ git clone https://github.com/WilliansNantes/Projeto_Futuro_Digital
 **pip install flask flask_sqlalchemy psycopg2**
 
 # Criar banco de dados
-Importar o arquivo
+Importar o arquivo:
 
 **banco de dados.sql**
 
-na pasta Banco de dados 
+na pasta **Banco de dados** 
 
 # Executar aplicação
 **python app.py**
