@@ -101,45 +101,57 @@ Essas mudanças trouxeram maior aderência às necessidades do cliente final.
 
 # 📊 Diagrama do Banco
 
-<p align="center"> <img src="Projeto_Futuro_Digital/img/img/mermaid-diagram.png" width="700">
+![Banco de Dados - Diagrama do Banco](./img/mermaid-diagram.png)
 
 
 
 ## 📂 Estrutura do Projeto
 
-futuro-digital
-│
-├── app.py
-├── conf/database.py
-├── routes
-│   ├── usuario.py
-│   ├── pessoa.py
+PROJETO_FUTURO_DIGITAL
+├── Banco de dados/              # Pasta (vazia ou com scripts)
+├── conf/
+│   ├── __pycache__/
+│   └── database.py
+├── control/                     # Lógica de controle/negócio
+│   ├── __pycache__/
+│   ├── __init__.py
+│   ├── consumo.py
+│   ├── fornecedor.py
 │   ├── ordem.py
-│   └── consumo.py
-│
-├── funcao/_perse_decimal.py
-│
-├── img
-│   ├── api_demo.gif
-│   ├── config_ordem_1.png
-│   ├── config_ordem_2.png
-│   └── config_ordem_3.png
-│
-├── banco de dados.sql
-│
-└── README.md
-
+│   ├── pessoa.py
+│   ├── produtos.py
+│   ├── status.py
+│   └── usuario.py
+├── funcao/                      # Funções auxiliares
+│   ├── __pycache__/
+│   └── _perse_decimal.py
+├── img/                         # Documentação visual e assets
+│   ├── Banco_de_dados_conf.company.jpg
+│   ├── Banco_de_dados_conf.order.02.jpg
+│   ├── Banco_de_dados_conf.order.03.jpg
+│   ├── Banco_de_dados_conf.order.jpg
+│   ├── estrutura.jpg
+│   └── mermaid-diagram.png
+├── routes/                      # Definição das rotas/endpoints
+│   ├── __pycache__/
+│   └── auth.py
+├── venv/                        # Ambiente virtual (Python)
+├── .env                         # Variáveis de ambiente
+├── .gitignore                   # Configuração do Git
+├── app.py                       # Arquivo principal da aplicação
+├── README.md                    # Documentação do projeto
+└── requirements.txt             # Dependências do projeto
 ## 📷 Desenvolvimento do Banco
 
 As imagens abaixo mostram etapas da configuração da tabela ordem durante o desenvolvimento do projeto.
 
-<p align="center"> <img src="Projeto_Futuro_Digital/img/Banco_de_dados_conf.company.jpg" width="700"> </p> 
+![Banco de Dados - Configuração da Tabela](./img/Banco_de_dados_conf.company.jpg)
 
-<p align="center"> <img src="Projeto_Futuro_Digital/img/Banco_de_dados_conf.order.02.jpg" width="700"> </p> 
+![Banco de Dados - Configuração da Tabela](./img/Banco_de_dados_conf.order.02.jpg)
 
-<p align="center"> <img src="Projeto_Futuro_Digital/img/Banco_de_dados_conf.order.03.jpg" width="700"> </p> 
+![Banco de Dados - Configuração da Tabela](./img/Banco_de_dados_conf.order.03.jpg)
 
-<p align="center"> <img src="Projeto_Futuro_Digital/img/Banco_de_dados_conf.order.jpg" width="700"> </p>
+![Banco de Dados - Configuração da Tabela](./img/Banco_de_dados_conf.order.jpg)
 
 # 🔐 Validações Implementadas
 
