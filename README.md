@@ -221,32 +221,34 @@ Clonar repositório
 git clone https://github.com/WilliansNantes/Projeto_Futuro_Digital
 
 # Entrar na pasta
-cd Projeto_Futuro_Digital
+**Projeto_Futuro_Digital**
 
 # Criar ambiente virtual
-python -m venv venv
+**python -m venv venv**
 
 # Ativar ambiente virtual
 ## Windows
-venv\Scripts\activate
+**venv\Scripts\activate**
 
 ## Linux / Mac
-source venv/bin/activate
+**source venv/bin/activate**
 
 # Instalar dependências
-pip install flask flask_sqlalchemy psycopg2
+**pip install flask flask_sqlalchemy psycopg2**
 
 # Criar banco de dados
 Importar o arquivo
-banco de dados.sql
-no PostgreSQL.
+
+**banco de dados.sql**
+
+na pasta Banco de dados 
 
 # Executar aplicação
-python app.py
+**python app.py**
 
 ## ✍️ Autor
 
-**Willians Nantes**
+# **Willians Nantes**
 
 ## 🎓 Formação
 
