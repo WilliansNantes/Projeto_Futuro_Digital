@@ -141,10 +141,10 @@ As imagens abaixo mostram etapas da configuração da tabela ordem durante o des
 
 <p align="center"> <img src="Projeto_Futuro_Digital/img/Banco_de_dados_conf.order.jpg" width="700"> </p>
 
-## 🔐 Validações Implementadas
+# 🔐 Validações Implementadas
 
 
-# Validações de Entrada
+## Validações de Entrada
 
 * campos obrigatórios
 * formato de e-mail
@@ -152,16 +152,16 @@ As imagens abaixo mostram etapas da configuração da tabela ordem durante o des
 * validação de datas
 
 
-# Validações de Integridade
+## Validações de Integridade
 
 * verificação de registros relacionados
 * controle de duplicidade
 * validação de valores positivos
 
 
-## 📡 Endpoints
+# 📡 Endpoints
 
-# Usuário
+## Usuário
 
 POST /usuario/insert
 GET /usuario/all
@@ -170,7 +170,7 @@ PUT /usuario/{id}
 DELETE /usuario/{id}
 
 
-# Pessoa
+## Pessoa
 
 POST /pessoa/insert
 GET /pessoa/all
@@ -179,7 +179,7 @@ PUT /pessoa/{id}
 DELETE /pessoa/{id}
 
 
-# Ordem
+## Ordem
 
 POST /ordem/insert
 GET /ordem/all
@@ -188,7 +188,7 @@ PUT /ordem/{id}
 DELETE /ordem/{id}
 
 
-# Consumo
+## Consumo
 
 POST /consumo/insert
 GET /consumo/all
@@ -197,51 +197,51 @@ DELETE /consumo/{id}
 
 
 
-## ⚙️ Tecnologias Utilizadas
-# Linguagens
+# ⚙️ Tecnologias Utilizadas
+## Linguagens
 * Python
 * SQL
 
-# Framework
+## Framework
 * Flask
 
-# Banco de Dados
+## Banco de Dados
 * PostgreSQL
 
-# Infraestrutura
+## Infraestrutura
 * Banco remoto hospedado no Render
 
-## ▶️ Instalação
+# ▶️ Instalação
 Clonar repositório
 git clone https://github.com/WilliansNantes/Projeto_Futuro_Digital
 
-## Entrar na pasta
+# Entrar na pasta
 cd Projeto_Futuro_Digital
 
-## Criar ambiente virtual
+# Criar ambiente virtual
 python -m venv venv
 
-## Ativar ambiente virtual
-Windows
+# Ativar ambiente virtual
+## Windows
 venv\Scripts\activate
 
 ## Linux / Mac
 source venv/bin/activate
 
-## Instalar dependências
+# Instalar dependências
 pip install flask flask_sqlalchemy psycopg2
 
-## Criar banco de dados
+# Criar banco de dados
 Importar o arquivo
 banco de dados.sql
 no PostgreSQL.
 
-## Executar aplicação
+# Executar aplicação
 python app.py
 
 ## Autor
 
-Willians Nantes
+# Willians Nantes
 
 ## 🎓 Formação
 
