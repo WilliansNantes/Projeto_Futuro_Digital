@@ -164,9 +164,13 @@ As imagens abaixo mostram etapas da configuração da tabela ordem durante o des
 ## Usuário
 
 POST /usuario/insert
+
 GET /usuario/all
+
 GET /usuario/{id}
+
 PUT /usuario/{id}
+
 DELETE /usuario/{id}
 
 
