@@ -176,27 +176,34 @@ DELETE /usuario/{id}
 
 ## Pessoa
 
-POST /pessoa/insert
-GET /pessoa/all
-GET /pessoa/{id}
-PUT /pessoa/{id}
-DELETE /pessoa/{id}
+POST /pessoa/insert</p>
+GET /pessoa/all</p>
+GET /pessoa/{id}</p>
+PUT /pessoa/{id}</p>
+DELETE /pessoa/{id}</p>
 
 
 ## Ordem
 
 POST /ordem/insert
+
 GET /ordem/all
+
 GET /ordem/{id}
+
 PUT /ordem/{id}
+
 DELETE /ordem/{id}
 
 
 ## Consumo
 
 POST /consumo/insert
+
 GET /consumo/all
+
 GET /consumo/{id}
+
 DELETE /consumo/{id}
 
 
