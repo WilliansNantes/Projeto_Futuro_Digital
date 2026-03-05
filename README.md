@@ -95,6 +95,20 @@ O sistema tem como objetivo fornecer uma estrutura organizada para gerenciamento
 - usuario
 
 
+---
+
+## Estrutura Final
+
+Após ajustes solicitados pelos **stakeholders**, a estrutura passou a ser:
+
+- consumo
+- fornecedor_empresa
+- ordem
+- pessoas
+- produtos
+- status
+- usuario
+
 Essas mudanças trouxeram maior aderência às necessidades do cliente final.
 
 ---
@@ -107,40 +121,8 @@ Essas mudanças trouxeram maior aderência às necessidades do cliente final.
 
 ## 📂 Estrutura do Projeto
 
-PROJETO_FUTURO_DIGITAL
-├── Banco de dados/              # Pasta (vazia ou com scripts)
-├── conf/
-│   ├── __pycache__/
-│   └── database.py
-├── control/                     # Lógica de controle/negócio
-│   ├── __pycache__/
-│   ├── __init__.py
-│   ├── consumo.py
-│   ├── fornecedor.py
-│   ├── ordem.py
-│   ├── pessoa.py
-│   ├── produtos.py
-│   ├── status.py
-│   └── usuario.py
-├── funcao/                      # Funções auxiliares
-│   ├── __pycache__/
-│   └── _perse_decimal.py
-├── img/                         # Documentação visual e assets
-│   ├── Banco_de_dados_conf.company.jpg
-│   ├── Banco_de_dados_conf.order.02.jpg
-│   ├── Banco_de_dados_conf.order.03.jpg
-│   ├── Banco_de_dados_conf.order.jpg
-│   ├── estrutura.jpg
-│   └── mermaid-diagram.png
-├── routes/                      # Definição das rotas/endpoints
-│   ├── __pycache__/
-│   └── auth.py
-├── venv/                        # Ambiente virtual (Python)
-├── .env                         # Variáveis de ambiente
-├── .gitignore                   # Configuração do Git
-├── app.py                       # Arquivo principal da aplicação
-├── README.md                    # Documentação do projeto
-└── requirements.txt             # Dependências do projeto
+![Layout - Estrutura do Projeto](./img/estrutura.png)
+
 ## 📷 Desenvolvimento do Banco
 
 As imagens abaixo mostram etapas da configuração da tabela ordem durante o desenvolvimento do projeto.
@@ -262,9 +244,9 @@ no PostgreSQL.
 # Executar aplicação
 python app.py
 
-## Autor
+## ✍️ Autor
 
-# Willians Nantes
+**Willians Nantes**
 
 ## 🎓 Formação
 
