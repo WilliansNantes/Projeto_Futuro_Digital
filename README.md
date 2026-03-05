@@ -1,136 +1,167 @@
-🚀 Projeto Futuro Digital
+# 🚀 Projeto Futuro Digital
 
+![Python](https://img.shields.io/badge/Python-3.10+-blue)
+![Flask](https://img.shields.io/badge/Flask-API-black)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
+![Status](https://img.shields.io/badge/Status-Em%20Desenvolvimento-orange)
+![License](https://img.shields.io/badge/License-Academic-lightgrey)
 
-📌 Sobre o Projeto
+---
 
-O Projeto Futuro Digital é uma API REST desenvolvida em Python, projetada para realizar o gerenciamento de informações comerciais relacionadas a clientes, fornecedores, produtos, consumo energético e ordens de venda.
+# 📌 Sobre o Projeto
 
-O sistema foi estruturado utilizando Flask e SQLAlchemy, permitindo uma arquitetura modular e escalável.
+O **Projeto Futuro Digital** é uma **API REST desenvolvida em Python**, voltada para gerenciamento de dados comerciais como clientes, fornecedores, produtos, consumo energético e ordens de venda.
 
-O projeto utiliza banco de dados remoto hospedado na plataforma Render, garantindo maior profissionalismo, acesso remoto e melhor gerenciamento das informações.
+O sistema foi desenvolvido utilizando **Flask e SQLAlchemy**, permitindo uma arquitetura modular, escalável e adequada para aplicações web modernas.
 
-Durante o desenvolvimento foram implementadas diversas validações de dados, garantindo consistência e integridade das informações armazenadas.
+O projeto utiliza um **banco de dados remoto hospedado na plataforma Render**, garantindo acesso remoto e maior profissionalismo no gerenciamento das informações.
 
-🎯 Objetivo do Projeto
+---
 
-O objetivo do sistema é fornecer uma estrutura organizada para controle de dados comerciais, permitindo:
+# 🎥 Demonstração da API
 
-cadastro de clientes e fornecedores
+<p align="center">
+<img src="img/api_demo.gif" width="800">
+</p>
 
-registro de consumo energético
+A demonstração acima mostra o funcionamento da API realizando operações de cadastro e consulta de dados.
 
-gerenciamento de produtos
+---
 
-controle de vendas
+# 🎯 Objetivo do Projeto
 
-classificação automática de clientes por score
+O sistema tem como objetivo fornecer uma estrutura organizada para gerenciamento de dados comerciais permitindo:
 
-🧠 Principais Funcionalidades
-👤 Gestão de Usuários
+- cadastro de clientes e fornecedores
+- registro de consumo energético
+- gerenciamento de produtos
+- controle de vendas
+- classificação automática de clientes
 
-Cadastro de usuários
+---
 
-Validação de dados
+# 🧠 Funcionalidades
 
-Consulta de registros
+## 👤 Gestão de Usuários
 
-Atualização de informações
+- cadastro de usuários
+- atualização de informações
+- consulta de registros
+- exclusão de usuários
 
-Exclusão de usuários
+---
 
-👥 Gestão de Pessoas
+## 👥 Gestão de Pessoas
 
-Cadastro de clientes ou leads
+- cadastro de clientes e leads
+- validação de e-mail e telefone
+- cálculo automático de score
+- classificação automática de status
 
-Validação de e-mail e telefone
+---
 
-Cálculo automático de score de cliente
+## 📊 Gestão de Consumo
 
-Classificação automática de status
+- registro de consumo energético
+- atualização automática de registros (UPSERT)
+- associação com clientes
 
-📊 Gestão de Consumo
+---
 
-Registro de consumo energético
+## 📦 Gestão de Produtos
 
-Atualização automática de registros (UPSERT)
+- cadastro de produtos
+- associação com fornecedores
 
-Associação com cliente
+---
 
-📦 Gestão de Produtos
+## 🧾 Gestão de Ordens
 
-Cadastro de produtos
+- registro de vendas
+- associação entre clientes e produtos
+- controle de status
 
-Associação com fornecedores
+---
 
-🧾 Gestão de Ordens
+# 🗄️ Evolução do Banco de Dados
 
-Registro de vendas
+## Estrutura Inicial
 
-Associação entre clientes e produtos
-
-Controle de status da ordem
-
-🗄️ Evolução do Banco de Dados
-Estrutura Inicial
-
-Durante o início do projeto, o banco de dados foi estruturado com as seguintes tabelas:
-
-fornecedor_empresa
-
+ornecedor_empresa
 ordem
-
 leads
-
 produtos
-
 status
-
 usuario
 
-Ajustes Realizados
 
-Durante o desenvolvimento, foram realizados ajustes estruturais no banco de dados e na programação para atender melhor às necessidades levantadas pelos stakeholders.
+Essas mudanças trouxeram maior aderência às necessidades do cliente final.
 
-Após as alterações, a estrutura final passou a conter as seguintes tabelas:
+---
 
-consumo
+# 📊 Diagrama do Banco
 
-fornecedor_empresa
+```mermaid
+erDiagram
 
-ordem
+USUARIO {
+int id_usuario
+string nome
+string email
+}
 
-pessoas
+PESSOAS {
+int id_pessoa
+string nome
+string email
+string contato
+}
 
-produtos
+PRODUTOS {
+int id_produto
+string nome
+decimal valor
+}
 
-status
+ORDEM {
+int id_ordem
+int id_pessoa
+int id_produto
+date data
+}
 
-usuario
+CONSUMO {
+int id_consumo
+int id_pessoa
+decimal consumo_mes
+}
 
-Essas mudanças proporcionaram maior organização e aderência às necessidades do cliente final.
+STATUS {
+int id_status
+string descricao
+}
 
-📊 Diagrama do Banco de Dados
-
-![Configuração da tabela ordem](img/mermaid-diagram)
+PESSOAS ||--o{ ORDEM : realiza
+PRODUTOS ||--o{ ORDEM : possui
+PESSOAS ||--o{ CONSUMO : registra
+STATUS ||--o{ PESSOAS : classifica
 
 📂 Estrutura do Projeto
-futuro-digital/
+
+futuro-digital
 │
 ├── app.py
-│
-├── conf/
-│   └── database.py
-│
-├── routes/
+├── conf/database.py
+├── routes
 │   ├── usuario.py
 │   ├── pessoa.py
 │   ├── ordem.py
 │   └── consumo.py
 │
-├── funcao/
-│   └── _perse_decimal.py
+├── funcao/_perse_decimal.py
 │
-├── img/
+├── img
+│   ├── api_demo.gif
 │   ├── config_ordem_1.png
 │   ├── config_ordem_2.png
 │   └── config_ordem_3.png
@@ -138,125 +169,116 @@ futuro-digital/
 ├── banco de dados.sql
 │
 └── README.md
+
 📷 Desenvolvimento do Banco
 
-As imagens abaixo mostram etapas da configuração da tabela ordem no banco de dados durante o desenvolvimento do projeto.
-![Configuração da tabela ordem](img/Banco_de_dados_conf.company)
+As imagens abaixo mostram etapas da configuração da tabela ordem durante o desenvolvimento do projeto.
 
-![Configuração da tabela ordem](img/Banco_de_dados_conf.order)
-
-![Configuração da tabela ordem](img/Banco_de_dados_conf.order.02)
-
-![Configuração da tabela ordem](img/Banco_de_dados_conf.order.03)
+<p align="center"> <img src="img/img/Banco_de_dados_conf.company.jpg" width="700"> </p> <p align="center"> <img src="img/img/Banco_de_dados_conf.order.02.jpg" width="700"> </p> <p align="center"> <img src="img/img/Banco_de_dados_conf.order.03.jpg" width="700"> </p> <p align="center"> <img src="img/img/img/Banco_de_dados_conf.order.jpg" width="700"> </p>
 
 🔐 Validações Implementadas
 
-O sistema possui diversas validações para garantir integridade dos dados:
 
 Validações de Entrada
 
-campos obrigatórios
+* campos obrigatórios
+* formato de e-mail
+* validação de números
+* validação de datas
 
-formato de e-mail
-
-números inteiros e decimais
-
-datas válidas
 
 Validações de Integridade
 
-verificação de existência de registros relacionados
+* verificação de registros relacionados
+* controle de duplicidade
+* validação de valores positivos
 
-controle de duplicidade
 
-validação de valores positivos
+📡 Endpoints
 
-Regras de Negócio
+Usuário
 
-cálculo automático de score de clientes
-
-classificação automática por status
-
-cálculo de média de consumo
-
-📡 Endpoints da API
-Usuários
-POST   /usuario/insert
-GET    /usuario/all
-GET    /usuario/{id}
-PUT    /usuario/{id}
+POST /usuario/insert
+GET /usuario/all
+GET /usuario/{id}
+PUT /usuario/{id}
 DELETE /usuario/{id}
-Pessoas
-POST   /pessoa/insert
-GET    /pessoa/all
-GET    /pessoa/{id}
-PUT    /pessoa/{id}
+
+
+Pessoa
+
+POST /pessoa/insert
+GET /pessoa/all
+GET /pessoa/{id}
+PUT /pessoa/{id}
 DELETE /pessoa/{id}
-Ordens
-POST   /ordem/insert
-GET    /ordem/all
-GET    /ordem/{id}
-PUT    /ordem/{id}
+
+
+Ordem
+
+POST /ordem/insert
+GET /ordem/all
+GET /ordem/{id}
+PUT /ordem/{id}
 DELETE /ordem/{id}
+
+
 Consumo
-POST   /consumo/insert
-GET    /consumo/all
-GET    /consumo/{id}
+
+POST /consumo/insert
+GET /consumo/all
+GET /consumo/{id}
 DELETE /consumo/{id}
+
+
+
 ⚙️ Tecnologias Utilizadas
 Linguagens
+* Python
+* SQL
 
-Python
-
-SQL
-
-Frameworks
-
-Flask
-
-SQLAlchemy
+Framework
+* Flask
 
 Banco de Dados
-
-PostgreSQL
+* PostgreSQL
 
 Infraestrutura
+* Banco remoto hospedado no Render
 
-Banco de dados remoto hospedado no Render
+▶️ Instalação
+Clonar repositório
+git clone https://github.com/WilliansNantes/Projeto_Futuro_Digital
 
-▶️ Instalação e Execução
-1️⃣ Clonar o repositório
-git clone https://github.com/seu-usuario/futuro-digital.git
-2️⃣ Entrar na pasta do projeto
-cd futuro-digital
-3️⃣ Criar ambiente virtual
+Entrar na pasta
+cd Projeto_Futuro_Digital
+
+Criar ambiente virtual
 python -m venv venv
-4️⃣ Ativar ambiente virtual
 
-Windows:
-
+Ativar ambiente virtual
+Windows
 venv\Scripts\activate
 
-Linux/Mac:
-
+Linux / Mac
 source venv/bin/activate
-5️⃣ Instalar dependências
+
+Instalar dependências
 pip install flask flask_sqlalchemy psycopg2
-6️⃣ Criar banco de dados
 
-Importar o arquivo:
+Criar banco de dados
 
+Importar o arquivo
 banco de dados.sql
-
 no PostgreSQL.
 
-7️⃣ Executar a aplicação
+Executar aplicação
 python app.py
 
-A API estará disponível em:
-
+API disponível em:
 http://localhost:5000
-👨‍💻 Autor
+
+Autor
 
 Willians Nantes
 
@@ -266,7 +288,7 @@ Automação Industrial
 
 Análise e Desenvolvimento de Sistemas
 
-💻 Experiência com
+💻 Tecnologias
 
 Python
 
@@ -278,10 +300,9 @@ C++
 
 JavaScript
 
-CSS
+SQL
 
 APIs REST
 
-Banco de Dados
+⭐ Projeto desenvolvido para fins acadêmicos e portfólio profissional
 
-⭐ Projeto desenvolvido para fins acadêmicos e portfólio profissional.
