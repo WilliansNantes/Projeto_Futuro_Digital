@@ -2,6 +2,7 @@ from flask import Flask, Blueprint, request, jsonify
 from sqlalchemy import text
 from flask_sqlalchemy import SQLAlchemy #importar certinho
 from funcao._perse_decimal     import _parse_decimal
+from funcao._calcula_consumo    import _calcula_consumo
 import re
 
 from conf.database import db
@@ -45,6 +46,16 @@ def criar():
     campos.append("mes")
     dados["mes"] = mes
     
+    # Validação do valor de consumo
+    if valor_kwh_consumo:
+        try:
+            valor_kwh_consumo = _parse_decimal(valor_kwh_consumo)
+        except ValueError:
+            return jsonify({"erro": "Valor de consumo deve ser um número decimal"}), 400
+        
+    campos.append("valor_consumo")
+    dados["valor_consumo"] = valor_kwh_consumo
+    
     # Validação  de pessoa 
     try:
         pessoa_id = int(pessoa_id)
@@ -67,17 +78,6 @@ def criar():
 
     campos.append("pessoa_id")
     dados["pessoa_id"] = pessoa_id
-
-        
-    # Validação do valor de consumo
-    if valor_kwh_consumo:
-        try:
-            valor_kwh_consumo = _parse_decimal(valor_kwh_consumo)
-        except ValueError:
-            return jsonify({"erro": "Valor de consumo deve ser um número decimal"}), 400
-        
-    campos.append("valor_consumo")
-    dados["valor_consumo"] = valor_kwh_consumo
     
     # UPSERT (UPDATE OU INSERT)
     sql_check = text("""
@@ -125,6 +125,15 @@ def criar():
 
     db.session.commit()
 
+ #insere aqui a função de cálculo de consumo para atualizar a média e o score do cliente
+    consumo= _calcula_consumo(pessoa_id)
+    media_pago_mes = consumo.get("media_pago_mes")
+    score = _calcula_score( media_pago_mes, pessoa_id) #score é atualizado dentro da função
+    dados["score"] = score
+        
+
+                                
+                            
     return jsonify({"mensagem": mensagem, "consumo": valor_kwh_consumo}), 201
 
     #Selects
@@ -184,45 +193,4 @@ def delete(id):
     except Exception as e:
          return str(e)
      
-     #Calculando a média de consumo e valor pago
-    valores = []
-    sql_media = text("""
-        SELECT valor_consumo
-        FROM consumo
-        WHERE pessoa_id = :id_pessoa
-        ORDER BY ano DESC, mes DESC
-        LIMIT 3
-    """)
-    result = db.session.execute(sql_media, {"id_pessoa": id_pessoa})
-    valores = [row[0] for row in result.fetchall()]
-    
-    
-    quantidade_valores = len(valores)
-    if quantidade_valores == 3:
-        media_kwh_mes = sum(valores) / 3
-        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
-        
-    elif quantidade_valores == 2:
-        media_kwh_mes = sum(valores) / 2
-        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
-        
-    elif quantidade_valores == 1:    
-        media_kwh_mes = valores[0]
-        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
-        
-    else: 
-        media_kwh_mes = None
-        media_pago_mes = None
-        
-        campos.append("media_kwh_mes")
-        dados["media_kwh_mes"] = media_cons_mes
-    
-    # BÔNUS DE SCORE 
-    if media_pago_mes is not None:
-        if 500 <= media_pago_mes < 720:
-            score += 50
-        elif media_pago_mes >= 720:
-            score += 100
-            
-            campos.append("score")
-            dados["score"] = score
+     

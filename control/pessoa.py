@@ -223,44 +223,9 @@ def atualizar(id):
         
         else :
          score += 50
-    #Calculando a média de consumo e valor pago
-    valores = []
-    valores = text("""
-        SELECT valor_consumo
-        FROM consumo
-        ORDER BY ano DESC, mes DESC
-        LIMIT 3
-    """)
-    
-    quantidade_valores = len(valores)
-    if quantidade_valores == 3:
-        media_kwh_mes = sum(valores) / 3
-        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
-        
-    elif quantidade_valores == 2:
-        media_kwh_mes = sum(valores) / 2
-        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
-        
-    elif quantidade_valores == 1:    
-        media_kwh_mes = (valores)
-        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
-        
-    else: 
-        media_kwh_mes = None
-        media_pago_mes = None
-        
-        campos.append("media_kwh_mes")
-        dados["media_kwh_mes"] = media_cons_mes
-    
-    # BÔNUS DE SCORE 
-    if media_pago_mes is not None:
-        if 500 <= media_pago_mes < 720:
-            score += 50
-        elif media_pago_mes >= 720:
-            score += 100
             
-            campos.append("score")
-            dados["score"] = score
+    campos.append("score")
+    dados["score"] = score
             
     #Inserindo o status
     if score <= 50:
