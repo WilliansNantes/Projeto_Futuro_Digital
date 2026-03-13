@@ -28,10 +28,6 @@ def criar():
     score = 0
     media_cons_mes = None
 
-    campos_principais = [
-        nome, email,contato,cidade,
-    ]
-    
     #Validação do nome
     if nome:
         if not nome or nome.strip() == "":
@@ -62,64 +58,7 @@ def criar():
         campos.append("cidade")
         dados["cidade"] = cidade
         
-    # Conta quantos campos foram preenchidos
-    #SCORE base 
-    total_campos = len(campos_principais)
-    preenchidos = len([c for c in campos_principais if c])
-
-    if email and contato:
-        score += 100
-    else:
-        score += 50
-    #Calculando a média de consumo e valor pago
-    valores = []
-    valores = text("""
-        SELECT valor_consumo
-        FROM consumo
-        ORDER BY ano DESC, mes DESC
-        LIMIT 3
-    """)
     
-    quantidade_valores = len(valores)
-    if quantidade_valores == 3:
-        media_kwh_mes = sum(valores) / 3
-        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
-        
-    elif quantidade_valores == 2:
-        media_kwh_mes = sum(valores) / 2
-        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
-        
-    elif quantidade_valores == 1:    
-        media_kwh_mes = (valores)
-        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
-        
-    else: 
-        media_kwh_mes = None
-        media_pago_mes = None
-        
-        campos.append("media_kwh_mes")
-        dados["media_kwh_mes"] = media_cons_mes
-    
-    # BÔNUS DE SCORE 
-    if media_pago_mes is not None:
-        if 500 <= media_pago_mes < 720:
-            score += 50
-        elif media_pago_mes >= 720:
-            score += 100
-            
-            campos.append("score")
-            dados["score"] = score
-            
-    #Inserindo o status
-    if score <= 50:
-        status_id = 1 #Lead
-    elif score > 50 and score <= 100:
-        status_id = 2 #Cliente 
-    else:
-        status_id = 3 #Cliente Promissor
-        
-    campos.append("status_id")
-    dados["status_id"] = status_id
     
     #SQL
     cols = ", ".join(campos)
@@ -131,13 +70,36 @@ def criar():
 
     #executar consulta
     result = db.session.execute(sql, dados)
-    db.session.commit()
 
 
     #pega o id
-    id_produto = result.fetchone()[0]
-    dados['id_produto'] = id_produto
+    id_pessoa = result.fetchone()[0]
+    dados['id_pessoa'] = id_pessoa
+    
+    #SCORE base 
+    if email and contato:
+        score += 100
+    else:
+        score += 50
+        
+    campos.append("score")
+    dados["score"] = score
+            
+            
+    #Inserindo o status
+    if score <= 50:
+        status_id = 1 #Lead
+    elif score > 50 and score <= 100:
+        status_id = 2 #Cliente 
+    else:
+        status_id = 3 #Cliente Promissor
+        
+    campos.append("status_id")
+    dados["status_id"] = status_id
 
+
+
+    db.session.commit()
 
     return dados
     

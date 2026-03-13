@@ -183,3 +183,46 @@ def delete(id):
    
     except Exception as e:
          return str(e)
+     
+     #Calculando a média de consumo e valor pago
+    valores = []
+    sql_media = text("""
+        SELECT valor_consumo
+        FROM consumo
+        WHERE pessoa_id = :id_pessoa
+        ORDER BY ano DESC, mes DESC
+        LIMIT 3
+    """)
+    result = db.session.execute(sql_media, {"id_pessoa": id_pessoa})
+    valores = [row[0] for row in result.fetchall()]
+    
+    
+    quantidade_valores = len(valores)
+    if quantidade_valores == 3:
+        media_kwh_mes = sum(valores) / 3
+        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
+        
+    elif quantidade_valores == 2:
+        media_kwh_mes = sum(valores) / 2
+        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
+        
+    elif quantidade_valores == 1:    
+        media_kwh_mes = valores[0]
+        media_pago_mes = media_kwh_mes * 1.41  # tarifa fixa
+        
+    else: 
+        media_kwh_mes = None
+        media_pago_mes = None
+        
+        campos.append("media_kwh_mes")
+        dados["media_kwh_mes"] = media_cons_mes
+    
+    # BÔNUS DE SCORE 
+    if media_pago_mes is not None:
+        if 500 <= media_pago_mes < 720:
+            score += 50
+        elif media_pago_mes >= 720:
+            score += 100
+            
+            campos.append("score")
+            dados["score"] = score
